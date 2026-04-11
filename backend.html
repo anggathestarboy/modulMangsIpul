@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Laravel API Backend - Payment Gateway</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background-color: #0a0a0a;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #991b1b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7f1d1d;
+        }
+        .transition-elegant {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .code-block {
+            background-color: #0d0d0d;
+            color: #e5e5e5;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .api-table th,
+        .api-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .api-table th {
+            background-color: #7f1d1d;
+            color: white;
+            font-weight: 600;
+        }
+        .api-table tr:hover {
+            background-color: #1f1f1f;
+        }
+        .method-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .method-get { background-color: #059669; color: white; }
+        .method-post { background-color: #2563eb; color: white; }
+        .method-put { background-color: #d97706; color: white; }
+        .method-delete { background-color: #dc2626; color: white; }
+        .payment-card {
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .payment-card:hover {
+            transform: translateY(-5px);
+            border-color: #991b1b !important;
+        }
+        .sidebar-nav a.active {
+            background-color: #991b1b;
+            color: white;
+            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.3);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        .instruction-img {
+            border: 2px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+        .instruction-img img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #dc2626;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+
+        /* Mobile Sidebar Styles */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 85%;
+            max-width: 320px;
+            height: 100vh;
+            background-color: #111111;
+            border-right: 2px solid #991b1b;
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .mobile-sidebar.open {
+            left: 0;
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: none;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+        .hamburger-btn {
+            display: none;
+            cursor: pointer;
+            background: #111111;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 10px 14px;
+            transition: all 0.3s ease;
+        }
+        .hamburger-btn:hover {
+            background: #1f1f1f;
+            border-color: #dc2626;
+        }
+        @media (max-width: 1024px) {
+            .hamburger-btn {
+                display: block;
+            }
+            .desktop-sidebar {
+                display: none !important;
+            }
+            .main-content {
+                width: 100% !important;
+            }
+        }
+        .close-sidebar {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #dc2626;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .close-sidebar:hover {
+            background: #b91c1c;
+            transform: rotate(90deg);
+        }
+        body.sidebar-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] text-gray-200">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="close-sidebar" id="closeSidebar">
+            <i class="fas fa-times text-white text-sm"></i>
+        </div>
+        <div class="mt-8">
+            <h3 class="text-[#dc2626] font-bold text-xl mb-5 pb-2 border-b-2 border-[#dc2626]">Daftar Isi</h3>
+            <ul class="sidebar-nav space-y-2">
+                <li><a href="#pengenalan" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-play w-5"></i> Pengenalan</a></li>
+                <li><a href="#setup-projek" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-rocket w-5"></i> Setup Projek</a></li>
+                <li><a href="#autentikasi" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-lock w-5"></i> Autentikasi</a></li>
+                <li><a href="#crud-produk" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-database w-5"></i> CRUD Produk</a></li>
+                <li><a href="#transaksi-payment" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-credit-card w-5"></i> Transaksi & Payment Gateway</a></li>
+            </ul>
+            <div class="mt-8 pt-5 border-t border-[#2a2a2a]">
+                <h3 class="text-[#dc2626] font-bold text-lg mb-4">Tools Required</h3>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> PHP 8.2+</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Composer</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> MySQL / PostgreSQL</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Postman / Insomnia</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Laravel 12.x</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Midtrans Account</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] border-b-4 border-[#991b1b] sticky top-0 z-50 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-row justify-between items-center">
+            <div class="flex items-center gap-4">
+                <!-- Hamburger Button for Mobile -->
+                <div class="hamburger-btn" id="hamburgerBtn">
+                    <i class="fas fa-bars text-2xl text-[#dc2626]"></i>
+                </div>
+               
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-[#dc2626] to-[#f87171] bg-clip-text text-transparent">Laravel API Backend</h1>
+                   
+                </div>
+            </div>
+           
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
+        <!-- DESKTOP SIDEBAR (visible only on large screens) -->
+        <aside class="desktop-sidebar lg:w-80 w-full bg-[#111111] rounded-2xl border border-[#2a2a2a] p-6 h-fit sticky top-28 shadow-xl">
+            <h3 class="text-[#dc2626] font-bold text-xl mb-5 pb-2 border-b-2 border-[#dc2626]">Daftar Isi</h3>
+            <ul class="sidebar-nav space-y-2">
+                <li><a href="#pengenalan" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-play w-5"></i> Pengenalan</a></li>
+                <li><a href="#setup-projek" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-rocket w-5"></i> Setup Projek</a></li>
+                <li><a href="#autentikasi" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-lock w-5"></i> Autentikasi</a></li>
+                <li><a href="#crud-produk" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-database w-5"></i> CRUD Produk</a></li>
+                <li><a href="#transaksi-payment" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#1f1f1f] hover:text-white transition-elegant"><i class="fas fa-credit-card w-5"></i> Transaksi & Payment Gateway</a></li>
+            </ul>
+            <div class="mt-8 pt-5 border-t border-[#2a2a2a]">
+                <h3 class="text-[#dc2626] font-bold text-lg mb-4">Tools Required</h3>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> PHP 8.2+</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Composer</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> MySQL / PostgreSQL</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Postman / Insomnia</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Laravel 12.x</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check-circle text-[#dc2626] text-xs"></i> Midtrans Account</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content flex-1 bg-[#111111] rounded-2xl border border-[#2a2a2a] p-6 md:p-10 shadow-2xl">
+            
+            <!-- PENGENALAN -->
+            <section id="pengenalan" class="mb-16 pb-8 border-b border-[#2a2a2a]">
+                <div class="mb-6">
+                    <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">Pengenalan Laravel API</h2>
+                    <p class="text-gray-300 text-lg">Laravel adalah framework PHP yang powerful untuk membangun aplikasi web dan API dengan struktur yang elegant dan ekspresif.</p>
+                </div>
+                <div class="text-gray-300 space-y-4">
+                    <p>Framework ini menyediakan tools dan struktur yang diperlukan untuk membuat aplikasi yang robust, maintainable, dan scalable.</p>
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-6 mt-4">
+                        <h3 class="text-xl font-bold text-[#dc2626] mb-3">Tujuan Modul</h3>
+                        <p class="mb-3">Modul ini akan membimbing Anda dalam membuat:</p>
+                        <ul class="space-y-2 pl-5">
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> RESTful API dengan Laravel</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Autentikasi API menggunakan Laravel Sanctum</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> CRUD lengkap untuk resource Produk</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Transaksi dengan 2 tabel (Orders & OrderItems)</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Integrasi Payment Gateway (Midtrans)</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Testing API dengan Postman</li>
+                        </ul>
+                    </div>
+                </div>
+                <br><br>
+               <div class="text-gray-300 space-y-4">
+    <p>Sebelum memulai pengembangan aplikasi, Anda perlu menyiapkan beberapa tools penting agar proses coding berjalan lancar dan efisien.</p>
+    
+    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-6 mt-4">
+        <h3 class="text-xl font-bold text-[#dc2626] mb-3">Alat Persiapan</h3>
+        <p class="mb-3">Berikut adalah tools yang perlu Anda install:</p>
+        
+        <ul class="space-y-4 pl-5">
+            <li>
+                <div class="flex items-center gap-2 font-semibold">
+                    <i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Laragon
+                </div>
+                <p class="ml-5 text-sm mt-1">
+                    Laragon adalah aplikasi lokal server yang digunakan untuk menjalankan PHP, MySQL, dan tools backend lainnya dengan mudah.
+                </p>
+                <p class="ml-5 text-sm mt-1">
+                    🔗 Download: 
+                    <a href="https://laragon.org/download/" target="_blank" class="text-blue-400 underline">https://laragon.org/download/</a>
+                </p>
+                <p class="ml-5 text-sm mt-1">
+                    ⚙️ Cara Install:
+                    <br>1. Download installer dari website resmi
+                    <br>2. Jalankan file installer
+                    <br>3. Klik "Next" sampai selesai
+                    <br>4. Buka Laragon dan klik "Start All"
+                </p>
+            </li>
+
+            <li>
+                <div class="flex items-center gap-2 font-semibold">
+                    <i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Visual Studio Code (VS Code)
+                </div>
+                <p class="ml-5 text-sm mt-1">
+                    VS Code adalah code editor ringan namun powerful yang digunakan untuk menulis dan mengelola kode program.
+                </p>
+                <p class="ml-5 text-sm mt-1">
+                    🔗 Download: 
+                    <a href="https://code.visualstudio.com/" target="_blank" class="text-blue-400 underline">https://code.visualstudio.com/</a>
+                </p>
+                <p class="ml-5 text-sm mt-1">
+                    ⚙️ Cara Install:
+                    <br>1. Download installer sesuai OS
+                    <br>2. Jalankan installer
+                    <br>3. Centang "Add to PATH" (opsional tapi disarankan)
+                    <br>4. Klik "Install" dan tunggu selesai
+                    <br>5. Buka VS Code dan install extension seperti:
+                    <br>&nbsp;&nbsp;- PHP Intelephense
+                    <br>&nbsp;&nbsp;- Laravel Blade Snippets
+                    <br>&nbsp;&nbsp;- Prettier
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>
+            </section>
+
+            <!-- SETUP PROJEK -->
+            <section id="setup-projek" class="mb-16 pb-8 border-b border-[#2a2a2a]">
+                <div class="mb-6">
+                    <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">Setup Projek Laravel</h2>
+                    <p class="text-gray-300 text-lg">Langkah cepat membuat project Laravel menggunakan Laragon dan konfigurasi awal.</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-[#0a0a0a] rounded-xl border border-[#2a2a2a] p-6">
+                        <h3 class="text-2xl font-bold text-[#dc2626] mb-5 flex items-center">
+                            <i class="fas fa-list-ol mr-3"></i> Panduan Setup via Laragon
+                        </h3>
+                        <div class="space-y-5">
+                            <div class="flex items-start">
+                                <span class="step-number">1</span>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-white">Buka Laragon</p>
+                                    <p class="text-gray-400 text-sm">Pastikan Laragon sudah running (tombol Start All berwarna hijau)</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="step-number">2</span>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-white">Klik Kanan pada icon Laragon di system tray</p>
+                                    <p class="text-gray-400 text-sm">Pilih menu <span class="text-[#dc2626] font-mono bg-black px-2 py-0.5 rounded">Quick App</span> → <span class="text-[#dc2626] font-mono bg-black px-2 py-0.5 rounded">Laravel</span></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="step-number">3</span>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-white">Tunggu Proses Installasi</p>
+                                    <p class="text-gray-400 text-sm">Laragon akan otomatis mendownload dan menginstall Laravel beserta dependensinya</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                 
+
+                    <!-- Terminal commands -->
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fab fa-laravel text-[#dc2626] mr-2"></i> Perintah Terminal setelah selesai</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy All</button>
+                        </div>
+                        <pre class="code-block p-5">
+# Masuk ke VsCode di root projek
+code .
+
+# Install API dan Sanctum
+php artisan install:api
+
+# Jalankan development server
+php artisan serve</pre>
+                    </div>
+
+                       <!-- Gambar Petunjuk -->
+                    <div class="instruction-img">
+                        <br>
+                        <p>Jika sudah coba akses `localhost:8000` di browser dan pastikan tampilannya seperti gambar ini</p>
+                        <br>
+                        <img src="pentunjuk.png" alt="Petunjuk Laragon Quick App Laravel">
+                       
+                    </div>
+
+                    <p>setelah muncul tampilan itu, kembali ke Vscode dan cari file .env lalu konfigurasikan database seperti kode dibawah</p>
+
+                    <!-- Konfigurasi Database -->
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] p-5">
+                        
+                        <h3 class="font-bold text-[#dc2626] mb-2">Konfigurasi Database (.env)</h3>
+                        <pre class="code-block bg-black p-3 rounded">DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=belajar_api
+DB_USERNAME=root
+DB_PASSWORD=</pre>
+                      
+                    </div>
+
+                      <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fab fa-laravel text-[#dc2626] mr-2"></i> setelah selesai konfigurasi .env jalankan diterminal </span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy All</button>
+                        </div>
+                        <pre class="code-block p-5">
+php artisan migrate
+</pre>
+                    </div>
+
+
+                  
+                </div>
+            </section>
+
+            <!-- AUTENTIKASI -->
+            <section id="autentikasi" class="mb-16 pb-8 border-b border-[#2a2a2a]">
+                <div class="mb-6">
+                    <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">Autentikasi API dengan Sanctum</h2>
+                    <p class="text-gray-300 ">kita akan membangun sebuah sistem autentikasi berbasis API menggunakan Laravel Sanctum. Sistem autentikasi ini berfungsi untuk memastikan bahwa hanya pengguna yang terdaftar dan memiliki kredensial yang valid saja yang dapat mengakses fitur tertentu dalam aplikasi.</p>
+                    <br>
+                    <p class="text-gray-300 ">Dalam prosesnya, kita akan memulai dari pembuatan endpoint register dan login. Ketika pengguna melakukan registrasi, data seperti username dan password akan disimpan ke dalam database. Kemudian saat login, sistem akan melakukan verifikasi data tersebut. Jika berhasil, server akan mengembalikan token autentikasi yang nantinya digunakan untuk mengakses endpoint yang dilindungi.</p>
+                   <br>
+                  
+                   <h1 class="font-bold text-2xl">1. Register</h1>
+                   <p>di tahap ini kita akan membuat sistem registrasi atau pendaftaran yang dimana nanti user dapat membuat akun baru</p><br>
+ <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fab fa-laravel text-[#dc2626] mr-2"></i> jalankan di terminal </span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy All</button>
+                        </div>
+                        <pre class="code-block p-5">
+php artisan migrate
+</pre>
+                    </div>
+
+                   
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Http/Controllers/AuthController.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
+class AuthController extends Controller
+{
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully'
+        ]);
+    }
+}</pre>
+                    </div>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">routes/api.php (Auth Routes)</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">// Public Auth Routes
+Route::post('/login', [AuthController::class, 'login']);
+
+// Protected Routes (require auth:sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/profile', function (Request $request) {
+        return $request->user();
+    });
+});</pre>
+                    </div>
+
+                    <div class="bg-[#1a1a2e] border-l-4 border-[#3b82f6] rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2"><i class="fas fa-key text-blue-400"></i><span class="font-bold text-blue-300">Cara Menggunakan Bearer Token</span></div>
+                        <p class="text-sm text-gray-300">Setelah login, gunakan token di header request: <code class="bg-black px-2 py-0.5 rounded">Authorization: Bearer {your_token}</code></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CRUD PRODUK -->
+            <section id="crud-produk" class="mb-16 pb-8 border-b border-[#2a2a2a]">
+                <div class="mb-6">
+                    <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">CRUD Produk</h2>
+                    <p class="text-gray-300 text-lg">Membuat RESTful API untuk resource Product dengan operasi Create, Read, Update, Delete.</p>
+                </div>
+                <div class="space-y-5">
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] p-5">
+                        <h3 class="font-bold text-[#dc2626] mb-2">Generate Model & Controller</h3>
+                        <pre class="code-block bg-black p-3 rounded">php artisan make:model Product -a</pre>
+                    </div>
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] p-5">
+                        <h3 class="font-bold text-[#dc2626] mb-2">API Routes (routes/api.php)</h3>
+                        <pre class="code-block bg-black p-3 rounded">&lt;?php
+
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AuthController;
+
+// Public endpoints (tanpa auth)
+Route::get('products', [ProductController::class, 'index']);
+Route::get('products/{id}', [ProductController::class, 'show']);
+
+// Public auth
+Route::post('/login', [AuthController::class, 'login']);
+
+// Protected endpoints (require auth:sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('products', [ProductController::class, 'store']);
+    Route::put('products/{id}', [ProductController::class, 'update']);
+    Route::delete('products/{id}', [ProductController::class, 'destroy']);
+    
+    Route::post('/logout', [AuthController::class, 'logout']);
+});</pre>
+                    </div>
+                    <table class="api-table w-full text-sm">
+                        <thead>
+                            <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="method-badge method-get">GET</span></td><td>/api/products</td><td>Get all products</td><td>No</td></tr>
+                            <tr><td><span class="method-badge method-post">POST</span></td><td>/api/products</td><td>Create product</td><td>Yes (Bearer Token)</td></tr>
+                            <tr><td><span class="method-badge method-get">GET</span></td><td>/api/products/{id}</td><td>Get single product</td><td>No</td></tr>
+                            <tr><td><span class="method-badge method-put">PUT</span></td><td>/api/products/{id}</td><td>Update product</td><td>Yes (Bearer Token)</td></tr>
+                            <tr><td><span class="method-badge method-delete">DELETE</span></td><td>/api/products/{id}</td><td>Delete product</td><td>Yes (Bearer Token)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TRANSAKSI & PAYMENT GATEWAY -->
+            <section id="transaksi-payment" class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">Transaksi & Payment Gateway</h2>
+                    <p class="text-gray-300 text-lg">Implementasi transaksi dengan 2 tabel (Orders & OrderItems) dan integrasi Midtrans.</p>
+                </div>
+
+                <!-- Database Relationship -->
+                <div class="flex flex-col md:flex-row justify-center gap-6 bg-[#0a0a0a] p-6 rounded-xl border border-[#2a2a2a] mb-6">
+                    <div class="text-center p-4 border border-[#dc2626] rounded-lg">
+                        <div class="font-bold text-[#dc2626]">orders</div>
+                        <div class="text-xs">id(PK), user_id, total_amount, status, payment_status, payment_token</div>
+                    </div>
+                    <div class="text-2xl text-[#dc2626] text-center">⇨ 1:N ⇨</div>
+                    <div class="text-center p-4 border border-[#dc2626] rounded-lg">
+                        <div class="font-bold text-[#dc2626]">order_items</div>
+                        <div class="text-xs">id(PK), order_id(FK), product_id, quantity, price, subtotal</div>
+                    </div>
+                </div>
+
+                <!-- Order Relationship -->
+                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-6">
+                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
+                        <span>app/Models/Order.php (Relationships)</span>
+                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm">Copy</button>
+                    </div>
+                    <pre class="code-block p-5">public function user() { return $this->belongsTo(User::class); }
+public function items() { return $this->hasMany(OrderItem::class); }</pre>
+                </div>
+
+                <!-- Payment Methods -->
+                <h3 class="text-2xl font-bold text-[#dc2626] mb-4">Payment Methods Supported</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                        <i class="fab fa-cc-mastercard text-4xl text-[#dc2626]"></i>
+                        <div class="font-semibold mt-2">Midtrans</div>
+                    </div>
+                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                        <i class="fas fa-university text-4xl text-[#dc2626]"></i>
+                        <div class="font-semibold mt-2">Virtual Account</div>
+                    </div>
+                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                        <i class="fas fa-qrcode text-4xl text-[#dc2626]"></i>
+                        <div class="font-semibold mt-2">QRIS</div>
+                    </div>
+                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                        <i class="fab fa-google-pay text-4xl text-[#dc2626]"></i>
+                        <div class="font-semibold mt-2">E-Wallet</div>
+                    </div>
+                </div>
+
+                <!-- Install Midtrans -->
+                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
+                        <span>Install Midtrans Package</span>
+                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                    </div>
+                    <pre class="code-block p-5">composer require midtrans/midtrans-php</pre>
+                </div>
+
+                <!-- .env Config -->
+                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
+                        <span>.env Konfigurasi Midtrans</span>
+                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                    </div>
+                    <pre class="code-block p-5">MIDTRANS_MERCHANT_ID=G123456789
+MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxx
+MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxxx
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_IS_SANDBOX=true</pre>
+                </div>
+
+                <!-- Payment Controller -->
+                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
+                        <span>PaymentController.php - Create Payment</span>
+                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                    </div>
+                    <pre class="code-block p-5">public function createPayment(Request $request, Order $order)
+{
+    Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+    Config::$isProduction = false;
+    Config::$isSanitized = true;
+    Config::$is3ds = true;
+
+    $params = [
+        'transaction_details' => [
+            'order_id' => 'ORDER-' . $order->id . '-' . time(),
+            'gross_amount' => $order->total_amount,
+        ],
+        'customer_details' => [
+            'first_name' => auth()->user()->name,
+            'email' => auth()->user()->email,
+        ],
+        'item_details' => $this->getItemDetails($order),
+    ];
+
+    $snapToken = Snap::getSnapToken($params);
+    $order->update(['payment_token' => $snapToken, 'payment_status' => 'pending']);
+
+    return response()->json(['snap_token' => $snapToken]);
+}</pre>
+                </div>
+
+                <!-- Payment Routes -->
+                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
+                        <span>routes/api.php (Payment Routes)</span>
+                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                    </div>
+                    <pre class="code-block p-5">Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/orders/{order}/payment', [PaymentController::class, 'createPayment']);
+    Route::get('/orders/{order}/payment-status', [PaymentController::class, 'checkStatus']);
+});
+
+// Webhook (public)
+Route::post('/payment/notification', [PaymentController::class, 'handleNotification']);</pre>
+                </div>
+
+                <!-- Testing Sandbox -->
+                <div class="bg-green-900/20 border-l-4 border-green-500 rounded-lg p-4 mb-4">
+                    <p class="font-semibold text-green-400">🧪 Testing Sandbox Midtrans</p>
+                    <p class="text-sm mt-1">Kartu uji: <strong>VISA 4811 1111 1111 1114</strong> | CVV: 123 | Exp: 01/25 | 3DS Password: 112233</p>
+                </div>
+
+                <!-- Payment Flow Diagram -->
+                <div class="bg-[#0a0a0a] rounded-xl border border-[#2a2a2a] p-6 mt-6">
+                    <h3 class="font-bold text-[#dc2626] text-lg mb-4 text-center">Payment Flow Diagram</h3>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-3 text-sm">
+                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">1. Create Order</div>
+                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
+                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">2. Request Payment</div>
+                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
+                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">3. Get Snap Token</div>
+                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
+                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">4. User Pays</div>
+                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
+                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">5. Webhook Update</div>
+                    </div>
+                </div>
+
+                <div class="bg-[#1a1a2e] border-l-4 border-yellow-500 rounded-lg p-4 mt-6">
+                    <div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle text-yellow-400"></i><span class="font-bold text-yellow-400">Penting!</span></div>
+                    <p class="text-sm text-gray-300">Jangan pernah menyimpan data kartu kredit di database. Gunakan environment sandbox untuk development. Server Key harus disimpan di .env.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#0a0a0a] border-t-4 border-[#991b1b] mt-12 py-8">
+        <div class="max-w-7xl mx-auto text-center px-6">
+            <div class="text-2xl font-bold text-[#dc2626] mb-3">LARAVEL API BACKEND</div>
+            <p class="text-gray-400 text-sm">Modul Pembelajaran Backend dengan Laravel Framework + Payment Gateway Integration</p>
+            <p class="text-gray-500 text-xs mt-4">© 2025 Laravel API Module • Created for Educational Purposes</p>
+            <div class="flex justify-center gap-6 mt-4 text-gray-400">
+                <a href="#" class="hover:text-[#dc2626] transition"><i class="fab fa-github"></i> GitHub</a>
+                <a href="#" class="hover:text-[#dc2626] transition"><i class="fab fa-laravel"></i> Laravel Docs</a>
+                <a href="#" class="hover:text-[#dc2626] transition"><i class="fas fa-credit-card"></i> Midtrans Docs</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function copyCode(btn) {
+            let pre = btn.closest('.overflow-hidden')?.querySelector('.code-block');
+            if (!pre) {
+                pre = btn.closest('.bg-\\[\\#0a0a0a\\]')?.querySelector('.code-block');
+            }
+            if (!pre) {
+                pre = btn.parentElement?.nextElementSibling;
+            }
+            if (pre && pre.innerText) {
+                const text = pre.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    btn.classList.add('bg-green-600');
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                        btn.classList.remove('bg-green-600');
+                    }, 2000);
+                }).catch(() => {
+                    alert('Gagal menyalin teks');
+                });
+            } else {
+                alert('Tidak ada kode untuk disalin');
+            }
+        }
+
+        // Mobile sidebar functionality
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const body = document.body;
+
+        function openSidebar() {
+            mobileSidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            body.classList.add('sidebar-open');
+        }
+
+        function closeSidebarFunc() {
+            mobileSidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            body.classList.remove('sidebar-open');
+        }
+
+        hamburgerBtn.addEventListener('click', openSidebar);
+        closeSidebar.addEventListener('click', closeSidebarFunc);
+        sidebarOverlay.addEventListener('click', closeSidebarFunc);
+
+        // Close sidebar when clicking on a link
+        const mobileNavLinks = document.querySelectorAll('.mobile-sidebar .sidebar-nav a');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                closeSidebarFunc();
+                // Smooth scroll to section
+                const targetId = link.getAttribute('href');
+                if (targetId && targetId !== '#') {
+                    e.preventDefault();
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // Active link highlight on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 130;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (window.scrollY >= sectionTop && window.scrollY < sectionBottom) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
