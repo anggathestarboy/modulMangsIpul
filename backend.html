@@ -452,17 +452,81 @@ php artisan migrate
                     <p class="text-gray-300 ">Dalam prosesnya, kita akan memulai dari pembuatan endpoint register dan login. Ketika pengguna melakukan registrasi, data seperti username dan password akan disimpan ke dalam database. Kemudian saat login, sistem akan melakukan verifikasi data tersebut. Jika berhasil, server akan mengembalikan token autentikasi yang nantinya digunakan untuk mengakses endpoint yang dilindungi.</p>
                    <br>
                   
-                   <h1 class="font-bold text-2xl">1. Register</h1>
+                   <h1 class="font-bold text-2xl">1. Register</h1><br>
                    <p>di tahap ini kita akan membuat sistem registrasi atau pendaftaran yang dimana nanti user dapat membuat akun baru</p><br>
+
+<p>Pertama, kita akan melakukan penyesuaian pada struktur tabel users di database.</p>
+<p>Silakan buka file migration yang berada di folder <strong>database/migrations</strong>, biasanya dengan nama seperti <strong>xxxx_xx_xx_create_users_table.php</strong><br><br>
+</p>
+<p>Kemudian, cari bagian <strong>Schema::create('users')</strong> dan ganti isinya menjadi seperti berikut:</p>
+<br>
+
+ <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fab fa-laravel text-[#dc2626] mr-2"></i> ganti dengan kode berikut </span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy All</button>
+                        </div>
+                        <pre class="code-block p-5">
+  Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('fullname'); 
+            $table->string('email')->unique();
+            $table->string('no_telp');
+            $table->string("address");
+            $table->string('password');
+            $table->enum('role', ['admin', 'member'])->default('member');
+            $table->rememberToken();
+            $table->timestamps();
+        });
+</pre>
+                    </div>
+                    <br>
+
+<p>Setelah itu, jangan lupa jalankan perintah <strong>php artisan migrate</strong>. untuk menerapkan perubahan ke database.</p>
+<img src="tabel-users.jpg" alt="">
+<br>
+
+
+<p>selanjutnya, kita akan melakukan konfigurasi pada model User agar dapat digunakan untuk autentikasi menggunakan Sanctum.</p><br>
+<p>Silakan buka file <strong>app/Models/User.php</strong>, kemudian tambahkan properti <strong>protected $guarded = [];</strong> dan gunakan trait <strong>HasApiTokens</strong> beserta import class-nya seperti berikut:</p>
+<br>
+<div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+        <span class="font-mono text-sm"><i class="fab fa-laravel text-[#dc2626] mr-2"></i> ganti dengan kode berikut </span>
+        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy All</button>
+    </div>
+    <pre class="code-block p-5">
+&lt;?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasFactory, HasApiTokens;
+
+    protected $guarded = [];
+}
+</pre>
+</div>
+<br>
+
+<p>setelah itu kita akan membuat controller yang berfungsi sebagai pengatur logic aplikasi, di controller terdapat validasi input untuk mencegah kesalahan pengguna dalam menggunakan aplikasi seperti password minimal harus 6 karakter, username tidak boleh sama dengan pengguna lain, inputan email harus berformat email dan lain sebagainya </p>
+<br>
  <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
                         <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
                             <span class="font-mono text-sm"><i class="fab fa-laravel text-[#dc2626] mr-2"></i> jalankan di terminal </span>
                             <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy All</button>
                         </div>
                         <pre class="code-block p-5">
-php artisan migrate
+php artisan make:controller AuthController
 </pre>
                     </div>
+<br>
+                    <p>kita akan dibuatkan AuthController.php, kemudian salin kode dibawah kedalam file</p>
 
                    
                 </div>
@@ -483,262 +547,1733 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function register(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'fullname' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'no_telp' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'password' => 'required|string|min:6',
         ]);
 
-        $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer'
+        $user = \App\Models\User::create([
+            'fullname' => $request->fullname,
+            'email' => $request->email,
+            'no_telp' => $request->no_telp,
+            'address' => $request->address,
+            'password' => $request->password,
         ]);
-    }
 
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully'
-        ]);
+        
+
+        return response()->json(['message' => 'User registered successfully, you can now login', 'user' => $user], 201);
     }
 }</pre>
                     </div>
 
+                    <p>Script ini berfungsi untuk menerima data registrasi pengguna, memvalidasi input seperti nama, email, dan password, lalu menyimpan data tersebut ke database sebagai user baru dan mengembalikan respon sukses dalam bentuk JSON.</p>
+                    <p>setelah itu tambahkan script dibawah ini untuk mendaftarkan logic tadi ke endpoint</p>
+
                     <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
                         <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
-                            <span class="font-mono text-sm">routes/api.php (Auth Routes)</span>
+                            <span class="font-mono text-sm">routes/api.php</span>
                             <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
                         </div>
-                        <pre class="code-block p-5">// Public Auth Routes
+                        <pre class="code-block p-5">
+Route::post('/login', [AuthController::class, 'register']);
+</pre>
+                    </div>
+
+                    <br>
+                    <h3>Langkah-langkah membuat workspace dan request di Postman:</h3>
+<ol type="1">
+  <li>1. Buka aplikasi Postman dan buat workspace baru</li>
+  <li>2. Buat collection baru dan namai "belajar api"</li>
+  <li>3. klik titik tiga pada collection dan pilih opsi add request</li>
+  <li>4. klik titik tiga pada request dan rename menjadi "Register"</li>
+  <li>5. perhatikan disisi kanan ada teks GET berwarna hijau(disebelah inputan url)</li>
+  <li>6. ganti get menjadi POST(yang berwarna kuning)</li>
+  <li>7. ketikan di inputan url "localhost:8000/api/register"</li>
+  <li>8. pergi ke menu headers. di bagian key pilih Accept lalu value pilih application/json</li>
+  <li>9. selanjutnya pergi ke menu body lalu ke form data</li>
+  <li>10. inputkan data yang dibutuhkan menyesuaikan tabel users dan script di AuthController.php tadi</li>
+  <li>10. pencet tombol send berwarna biru disamping kanan inputan url</li>
+ 
+</ol>
+
+
+<p>gambar di bawah menandakan register berhasil. anda bisa cek tabel users di "localhost/phpmyadmin" dan pastikan sudah ada data yang anda inputkan atau belum</p>
+
+
+<img src="contoh-register.jpg" alt="">
+
+
+
+<!-- INI LOGIN -->
+
+
+<h2 class="text-2xl font-bold mt-10">2. Login</h2>
+
+
+<p>Pada tahap ini, kita akan membuat sistem login dimana user dapat masuk menggunakan email dan password yang sudah didaftarkan sebelumnya.</p>
+
+
+<div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+        <span class="font-mono text-sm">app/Http/Controllers/AuthController.php (taruh dibawah function register)</span>
+        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition">
+            <i class="far fa-copy"></i> Copy
+        </button>
+    </div>
+    <pre class="code-block p-5">
+public function login(Request $request)
+{
+    $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string',
+    ]);
+
+    $user = \App\Models\User::where('email', $request->email)->first();
+
+    if (!$user || !\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json(['message' => 'Login successful', 'token' => $token]);
+}
+</pre>
+</div>
+
+
+
+<p>Script ini berfungsi untuk memverifikasi email dan password user, lalu memberikan token autentikasi jika login berhasil.</p>
+
+
+
+<p>Selanjutnya, daftarkan endpoint login pada file <strong>routes/api.php</strong> seperti berikut:</p>
+
+<div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+        <span class="font-mono text-sm">routes/api.php</span>
+        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition">
+            <i class="far fa-copy"></i> Copy
+        </button>
+    </div>
+    <pre class="code-block p-5">
 Route::post('/login', [AuthController::class, 'login']);
+</pre>
+</div>
 
-// Protected Routes (require auth:sanctum)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/profile', function (Request $request) {
-        return $request->user();
-    });
-});</pre>
-                    </div>
+<br>
 
-                    <div class="bg-[#1a1a2e] border-l-4 border-[#3b82f6] rounded-lg p-4">
-                        <div class="flex items-center gap-2 mb-2"><i class="fas fa-key text-blue-400"></i><span class="font-bold text-blue-300">Cara Menggunakan Bearer Token</span></div>
-                        <p class="text-sm text-gray-300">Setelah login, gunakan token di header request: <code class="bg-black px-2 py-0.5 rounded">Authorization: Bearer {your_token}</code></p>
-                    </div>
+<h3>Langkah-langkah membuat request Login di Postman:</h3>
+<ol>
+  
+  <li>1. Klik titik tiga di collection lalu pilih <strong>Add Request</strong></li>
+  <li>2. Rename request menjadi <strong>Login</strong></li>
+  <li>3. Ubah method menjadi <strong>POST</strong></li>
+  <li>4. Masukkan URL: <strong>localhost:8000/api/login</strong></li>
+  <li>5. Masuk ke tab <strong>Headers</strong>, isi:
+      <br>Key: Accept
+      <br>Value: application/json
+  </li>
+  <li>6. Masuk ke tab <strong>Body</strong> → pilih <strong>form-data</strong></li>
+  <li>Tambahkan field berikut:
+      <br>- email
+      <br>- password
+  </li>
+  <li>7. Isi email dan password sesuai dengan data yang sudah diregister sebelumnya</li>
+  <img src="body-request.jpg" alt="">
+  <li>8. Klik tombol <strong>Send</strong></li>
+</ol>
+
+<br>
+
+<p>Jika berhasil, maka akan muncul response berupa token yang nantinya digunakan untuk mengakses endpoint yang membutuhkan autentikasi.</p>
+<img src="token.jpg" alt="">
+
+<h2 class="text-2xl font-bold mt-10">3. Get Auth User</h2>
+
+
+<p>Pada tahap ini, kita akan mengambil data user yang sedang login berdasarkan token yang telah didapatkan saat login.</p>
+
+
+
+
+
+
+<p>Endpoint ini dilindungi oleh middleware <strong>auth:sanctum</strong>, sehingga hanya user yang memiliki token yang valid yang dapat mengaksesnya.</p>
+
+<h3>Cara menggunakan token di Postman:</h3>
+<ol>
+  <li>1. Lakukan login terlebih dahulu dan copy token yang didapatkan</li>
+  <img src="token-copy.jpg" alt="">
+  <li>2. buat request baru dengan nama <strong>Get Auth Me</strong></li>
+  <li>3. Masukkan URL: <strong>localhost:8000/api/user</strong></li>
+  <li>4. Masuk ke tab <strong>Authorization</strong> dan cari <strong>Bearer Token di dropdown</strong></li>
+<li>5. tempelkan token di inputan seperti di gambar</li>
+<img src="me.jpg" alt="">
+  <li>6. Klik tombol <strong>Send</strong></li>
+</ol>
+
+
+
+<p>Jika token valid, maka sistem akan mengembalikan data user yang sedang login.</p>
+<p>Jika token tidak valid atau tidak dikirim, maka akan muncul error Unauthorized.</p>
+
+
+
+<h2 class="text-2xl font-bold mt-10">4. Logout</h2>
+
+<p>Pada tahap ini, kita akan membuat fitur logout yang berfungsi untuk menghapus token user sehingga tidak bisa lagi mengakses endpoint yang dilindungi.</p>
+
+<div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+        <span class="font-mono text-sm">app/Http/Controllers/AuthController.php</span>
+        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition">
+            <i class="far fa-copy"></i> Copy
+        </button>
+    </div>
+    <pre class="code-block p-5">
+public function logout(Request $request)
+{
+    $user = Auth::user();
+    $user->tokens()->delete();
+
+    return response()->json(['message' => 'Logout successful']);
+}
+</pre>
+</div>
+
+<p>Script ini berfungsi untuk mengambil user yang sedang login melalui token, kemudian menghapus semua token milik user tersebut sehingga akses ke sistem akan terputus.</p>
+
+<p>Selanjutnya, daftarkan endpoint logout pada file <strong>routes/api.php</strong> dan gunakan middleware auth:sanctum agar hanya user yang login yang bisa mengaksesnya.</p>
+
+<div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden">
+    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+        <span class="font-mono text-sm">routes/api.php</span>
+        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition">
+            <i class="far fa-copy"></i> Copy
+        </button>
+    </div>
+    <pre class="code-block p-5">
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+</pre>
+</div>
+<ol>
+  <li>1. Sertakan token pada bagian Authorization dengan format Bearer Token seperti di request Get Auth Me tadi</li>
+  <li>2. masukan di input "localhost:8000/api/logout"</li>
+  <li>3. Pencet tombol Send</li>
+
+
+
+ 
+</ol>
+
+
+<p>jika berhasil maka terdapat message Logout successful</p>
+<p>perlu diperhatikan!! token yang sudah di logout tidak bisa dipakai ulang, jadi kamu harus login ulang untuk dapat token baru</p>
                 </div>
             </section>
 
             <!-- CRUD PRODUK -->
+               <!-- CRUD PRODUK -->
             <section id="crud-produk" class="mb-16 pb-8 border-b border-[#2a2a2a]">
                 <div class="mb-6">
                     <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">CRUD Produk</h2>
-                    <p class="text-gray-300 text-lg">Membuat RESTful API untuk resource Product dengan operasi Create, Read, Update, Delete.</p>
+                   
                 </div>
-                <div class="space-y-5">
-                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] p-5">
-                        <h3 class="font-bold text-[#dc2626] mb-2">Generate Model & Controller</h3>
-                        <pre class="code-block bg-black p-3 rounded">php artisan make:model Product -a</pre>
+
+                <div class="text-gray-300 space-y-4 mb-6">
+                    <p>Pada section ini, kita akan membangun fitur CRUD (Create, Read, Update, Delete) untuk mengelola data produk. Fitur ini akan menjadi fondasi untuk sistem e-commerce yang akan kita bangun selanjutnya.</p>
+                    <p>Kita akan membagi akses endpoint menjadi dua kategori:</p>
+                    <ul class="space-y-2 pl-5">
+                        <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> <strong>Public Endpoint:</strong> Dapat diakses tanpa autentikasi (READ only)</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> <strong>Protected Endpoint:</strong> Hanya dapat diakses oleh admin (CREATE, UPDATE, DELETE)</li>
+                    </ul>
+                </div>
+
+                <!-- 1. CREATE MODEL & MIGRATION -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">1</span> Create Model & Migration
+                    </h3>
+                    
+                    <p class="text-gray-300 mb-4">Pertama, kita akan membuat Model Product beserta migration file-nya. Jalankan perintah berikut di terminal:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:model Product -m</pre>
                     </div>
-                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] p-5">
-                        <h3 class="font-bold text-[#dc2626] mb-2">API Routes (routes/api.php)</h3>
-                        <pre class="code-block bg-black p-3 rounded">&lt;?php
 
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\AuthController;
+                    <p class="text-gray-300 mb-3">Flag <code class="bg-black px-2 py-1 rounded">-m</code> akan otomatis membuat file migration untuk tabel products.</p>
+                    
+                    <p class="text-gray-300 mb-3">Selanjutnya, buka file migration yang berada di folder <strong>database/migrations/xxxx_xx_xx_create_products_table.php</strong> dan ubah schema-nya menjadi seperti berikut:</p>
 
-// Public endpoints (tanpa auth)
-Route::get('products', [ProductController::class, 'index']);
-Route::get('products/{id}', [ProductController::class, 'show']);
-
-// Public auth
-Route::post('/login', [AuthController::class, 'login']);
-
-// Protected endpoints (require auth:sanctum)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('products', [ProductController::class, 'store']);
-    Route::put('products/{id}', [ProductController::class, 'update']);
-    Route::delete('products/{id}', [ProductController::class, 'destroy']);
-    
-    Route::post('/logout', [AuthController::class, 'logout']);
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">database/migrations/xxxx_xx_xx_create_products_table.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">Schema::create('products', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->text('description');
+    $table->integer('price');
+    $table->integer('stock');
+    $table->timestamps();
 });</pre>
                     </div>
+
+                    <p class="text-gray-300 mb-3">Setelah selesai, jalankan migration untuk membuat tabel di database:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan migrate</pre>
+                    </div>
+
+                    <p class="text-gray-300">Cek di phpMyAdmin, tabel <strong>products</strong> seharusnya sudah muncul dengan struktur yang kita definisikan.</p>
+                    <img src="ssproduk.jpg" alt="Tabel Products di phpMyAdmin" class="my-4 rounded-lg border border-[#2a2a2a]">
+                </div>
+
+                <!-- 2. KONFIGURASI MODEL -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">2</span> Konfigurasi Model Product
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>app/Models/Product.php</strong> dan tambahkan properti <code class="bg-black px-2 py-1 rounded">$fillable</code> untuk menentukan field mana saja yang boleh diisi secara massal:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Models/Product.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'stock',
+    ];
+}</pre>
+                    </div>
+
+                    <p class="text-gray-300"><code class="bg-black px-2 py-1 rounded">$fillable</code> berfungsi untuk melindungi aplikasi dari <strong>Mass Assignment Vulnerability</strong>. Hanya field yang terdaftar di sini yang bisa diisi menggunakan method <code>create()</code> atau <code>update()</code>.</p>
+                </div>
+
+                <!-- 3. CREATE ADMIN MIDDLEWARE -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">3</span> Create Admin Middleware
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Kita perlu membuat middleware untuk membatasi akses operasi Create, Update, dan Delete hanya untuk user dengan role <strong>admin</strong>. Jalankan perintah berikut:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:middleware AdminMiddleware</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>app/Http/Middleware/AdminMiddleware.php</strong> dan isi dengan kode berikut:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Http/Middleware/AdminMiddleware.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
+
+class AdminMiddleware
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'message' => 'Admin only'
+            ], 403);
+        }
+
+        return $next($request);
+    }
+}</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Selanjutnya, daftarkan middleware ini di file <strong>bootstrap/app.php</strong>:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">bootstrap/app.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+    ]);
+})</pre>
+                    </div>
+
+                    <div class="bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-yellow-400 flex items-center gap-2"><i class="fas fa-info-circle"></i> Catatan Penting</p>
+                        <p class="text-sm text-gray-300 mt-1">Pastikan Anda sudah membuat user dengan role <strong>admin</strong> di database. Anda bisa mengubah role user melalui phpMyAdmin dengan mengedit kolom <code>role</code> menjadi "admin".</p>
+                        <img src="ss-admin.jpg" alt="">
+                    </div>
+                </div>
+
+                <!-- 4. CREATE PRODUCT CONTROLLER -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">4</span> Create Product Controller
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buat controller untuk menangani semua operasi CRUD produk:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:controller ProductController --resource</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Flag <code>--resource</code> akan membuat controller dengan method standar RESTful (index, store, show, update, destroy).</p>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>app/Http/Controllers/ProductController.php</strong> dan ganti seluruh isinya dengan kode berikut:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Http/Controllers/ProductController.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use Illuminate\Http\Request;
+
+class ProductController extends Controller
+{
+    /**
+     * Get Semua Produk (PUBLIC)
+     * Endpoint ini dapat diakses tanpa autentikasi
+     */
+    public function index()
+    {
+        $products = Product::all();
+        return response()->json($products);
+    }
+
+    /**
+     * Get Detail Produk (PUBLIC)
+     * Endpoint ini dapat diakses tanpa autentikasi
+     */
+    public function show(Product $product)
+    {
+        return response()->json($product);
+    }
+
+    /**
+     * Create Produk Baru (ADMIN ONLY)
+     * Endpoint ini memerlukan autentikasi dan role admin
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        $product = Product::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'stock' => $request->stock,
+        ]);
+
+        return response()->json([
+            'message' => 'Product created successfully',
+            'product' => $product
+        ], 201);
+    }
+
+    /**
+     * Update Produk (ADMIN ONLY)
+     * Endpoint ini memerlukan autentikasi dan role admin
+     */
+    public function update(Request $request, Product $product)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        $product->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'stock' => $request->stock,
+        ]);
+
+        return response()->json([
+            'message' => 'Product updated successfully',
+            'product' => $product
+        ]);
+    }
+
+    /**
+     * Delete Produk (ADMIN ONLY)
+     * Endpoint ini memerlukan autentikasi dan role admin
+     */
+    public function destroy(Product $product)
+    {
+        $product->delete();
+        
+        return response()->json([
+            'message' => 'Product deleted successfully'
+        ]);
+    }
+}</pre>
+                    </div>
+
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-4">
+                        <h4 class="font-bold text-[#dc2626] mb-3">📋 Penjelasan Method Controller</h4>
+                        <table class="api-table w-full text-sm">
+                            <thead>
+                                <tr><th>Method</th><th>Fungsi</th><th>Akses</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="font-mono">index()</td><td>Mengambil semua data produk</td><td><span class="method-badge method-get">PUBLIC</span></td></tr>
+                                <tr><td class="font-mono">show()</td><td>Mengambil detail satu produk</td><td><span class="method-badge method-get">PUBLIC</span></td></tr>
+                                <tr><td class="font-mono">store()</td><td>Membuat produk baru</td><td><span class="method-badge method-post">ADMIN ONLY</span></td></tr>
+                                <tr><td class="font-mono">update()</td><td>Mengupdate data produk</td><td><span class="method-badge method-put">ADMIN ONLY</span></td></tr>
+                                <tr><td class="font-mono">destroy()</td><td>Menghapus produk</td><td><span class="method-badge method-delete">ADMIN ONLY</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 5. REGISTER ROUTES -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">5</span> Register API Routes
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>routes/api.php</strong> dan tambahkan routing untuk produk:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">routes/api.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">
+use App\Http\Controllers\ProductController;
+use App\Http\Middleware\AdminMiddleware;
+
+
+// PUBLIC ROUTES (Tanpa Autentikasi)
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+
+
+
+// PROTECTED ROUTES (Perlu Login)
+Route::middleware('auth:sanctum')->group(function () {
+   
+  Route::middleware([AdminMiddleware::class])->group(function () {
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+    });
+});</pre>
+                    </div>
+
+                    <div class="bg-green-900/20 border-l-4 border-green-500 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i> Struktur Routing</p>
+                        <p class="text-sm text-gray-300 mt-1">Perhatikan bahwa route dibagi menjadi 3 level akses:</p>
+                        <ul class="text-sm text-gray-300 mt-2 space-y-1 pl-5">
+                            <li>• <strong>Public:</strong> Tanpa middleware (READ produk, Login, Register)</li>
+                            <li>• <strong>Auth Only:</strong> Dengan middleware <code>auth:sanctum</code> (Get Auth me, Logout)</li>
+                            <li>• <strong>Admin Only:</strong> Dengan middleware <code>auth:sanctum + AdminMiddleware</code> (Create, Update, Delete)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 6. TESTING API -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">6</span> Testing API di Postman
+                    </h3>
+
+                    <p class="text-gray-300 mb-4">Setelah semua kode selesai, saatnya melakukan testing menggunakan Postman.</p>
+
+
+   <!-- CREATE Product (ADMIN) -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-post">POST</span> 
+                            <span class="font-mono">/api/products</span>
+                            <span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded ml-2">ADMIN ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Membuat produk baru (harus login sebagai admin)</p>
+                        
+                        <h5 class="font-semibold text-gray-300 mb-2">Langkah-langkah:</h5>
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Login terlebih dahulu sebagai user admin</li>
+                            <li>2. Copy token yang didapatkan</li>
+                            <li>3. Buat request baru dengan method <strong>POST</strong> namai "create product"</li>
+                            <li>4. Masukkan URL: <strong>localhost:8000/api/products</strong></li>
+                            <li>5. Klik Headers lalu pilih type Accept dan value application/json</li>
+                            <li>6. Masuk ke tab <strong>Authorization</strong> → pilih <strong>Bearer Token</strong> → paste token</li>
+                            <li>7. Masuk ke tab <strong>Body</strong> → pilih <strong>form-data</strong></li>
+                            <li>8. Tambahkan field:
+                                <br>- name
+                                <br>- description
+                                <br>- price
+                                <br>- stock
+                            </li>
+                            <li>8. Klik tombol <strong>Send</strong></li>
+                        </ol>
+                        
+                        <img src="create.jpg" alt="Body Request Create Product" class="my-4 rounded-lg border border-[#2a2a2a]">
+                        
+                       
+
+                    </div>
+
+                    <!-- GET All Products -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-get">GET</span> 
+                            <span class="font-mono">/api/products</span>
+                            <span class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded ml-2">PUBLIC</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Mengambil semua data produk (tidak perlu token)</p>
+                        
+                        <h5 class="font-semibold text-gray-300 mb-2">Langkah-langkah:</h5>
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Buat request baru, namai <strong>Get Product</strong></li>
+                            <li>2. Pilih method <strong>GET</strong></li>
+                            <li>3. Masukkan URL: <strong>localhost:8000/api/products</strong></li>
+                            <li>4. Klik tombol <strong>Send</strong></li>
+                        </ol>
+                        
+                        <p class="text-gray-400 text-sm mt-3">Response yang diharapkan:</p>
+                        <pre class="code-block bg-black p-3 rounded text-xs mt-2">[
+    {
+        "id": 1,
+        "name": "Makroni Pedas",
+        "description": "terbuat dari bahan pilihan dan berkualitas",
+        "price": 5000,
+        "stock": 5,
+        "created_at": "2026-04-11T14:13:21.000000Z",
+        "updated_at": "2026-04-11T14:13:21.000000Z"
+    }
+]</pre>
+                    </div>
+
+                    <!-- GET Single Product -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-get">GET</span> 
+                            <span class="font-mono">/api/products/{id}</span>
+                            <span class="text-xs bg-green-900 text-green-300 px-2 py-1 rounded ml-2">PUBLIC</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Mengambil detail satu produk berdasarkan ID</p>
+                        
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Buat request baru namai <strong>Get Detail Product</strong> pilih method <strong>GET</strong></li>
+                            <li>2. Masukkan URL: <strong>localhost:8000/api/products/1</strong></li>
+                            <li>3. Klik tombol <strong>Send</strong></li>
+
+                        </ol>
+
+                         <p class="text-gray-400 text-sm mt-3">Response yang diharapkan:</p>
+                        <pre class="code-block bg-black p-3 rounded text-xs mt-2">
+{
+    "id": 1,
+    "name": "Makroni Pedas",
+    "description": "terbuat dari bahan pilihan dan berkualitas",
+    "price": 5000,
+    "stock": 5,
+    "created_at": "2026-04-11T14:13:21.000000Z",
+    "updated_at": "2026-04-11T14:13:21.000000Z"
+}
+                        </pre>
+                    </div>
+
+                 
+
+                    <!-- UPDATE Product (ADMIN) -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-put">PUT</span> 
+                            <span class="font-mono">/api/products/{id}</span>
+                            <span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded ml-2">ADMIN ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Mengupdate data produk berdasarkan ID</p>
+                        
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. buat request baru namanya <strong>Update Product</strong> dengan method <strong>PUT</strong></li>
+                            <li>2. letakan token di Authorization -> Bearer Token</li>
+                            <li>3. Masukkan URL: <strong>localhost:8000/api/products/1</strong></li>
+                            <li>4. Masuk ke tab <strong>Headers</strong> → pilih <strong>Accept</strong> dan value <strong>Aplication/Json</strong></li>
+                            <li>5. Masuk ke tab <strong>Body</strong> → pilih <strong>form-data</strong></li>
+                            <li>6. Isi field yang ingin diupdate (name, description, price, stock)</li>
+                            <li>7. Klik tombol <strong>Send</strong></li>
+                        </ol>
+                        
+                        <img src="updatebolo.jpg" alt="Body Request Update Product" class="my-4 rounded-lg border border-[#2a2a2a]">
+                    </div>
+
+                    <!-- DELETE Product (ADMIN) -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-delete">DELETE</span> 
+                            <span class="font-mono">/api/products/{id}</span>
+                            <span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded ml-2">ADMIN ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Menghapus produk berdasarkan ID</p>
+                        
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. buat request baru namai <strong>Delete Product</strong> lalu Pilih method <strong>DELETE</strong></li>
+                            <li>2. Pastikan token admin sudah disertakan di Authorization</li>
+                            <li>3. Masukkan URL: <strong>localhost:8000/api/products/1</strong></li>
+                            <li>4. Klik tombol <strong>Send</strong></li>
+                        </ol>
+                        
+                        <p class="text-gray-400 text-sm mt-3">Response sukses:</p>
+                        <pre class="code-block bg-black p-3 rounded text-xs mt-2">{
+    "message": "Product deleted successfully"
+}</pre>
+                    </div>
+                </div>
+
+                <!-- 7. ERROR HANDLING EXAMPLES -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">7</span> Error Handling Examples
+                    </h3>
+
+                    <p class="text-gray-300 mb-4">Berikut adalah beberapa contoh error response yang mungkin muncul:</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Unauthorized -->
+                        <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4">
+                            <h5 class="font-semibold text-red-400 mb-2">❌ 401 Unauthorized</h5>
+                            <p class="text-xs text-gray-400 mb-2">Terjadi ketika mengakses endpoint protected tanpa token</p>
+                            <pre class="code-block bg-black p-3 rounded text-xs">{
+    "message": "Unauthenticated."
+}</pre>
+                        </div>
+
+                        <!-- Forbidden -->
+                        <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4">
+                            <h5 class="font-semibold text-red-400 mb-2">🚫 403 Forbidden</h5>
+                            <p class="text-xs text-gray-400 mb-2">Terjadi ketika user biasa mencoba akses endpoint admin</p>
+                            <pre class="code-block bg-black p-3 rounded text-xs">{
+    "message": "Admin only"
+}</pre>
+                        </div>
+
+                        <!-- Validation Error -->
+                        <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4">
+                            <h5 class="font-semibold text-red-400 mb-2">⚠️ 422 Validation Error</h5>
+                            <p class="text-xs text-gray-400 mb-2">Terjadi ketika data yang dikirim tidak valid</p>
+                            <pre class="code-block bg-black p-3 rounded text-xs">{
+    "message": "The name field is required.",
+    "errors": {
+        "name": ["The name field is required."]
+    }
+}</pre>
+                        </div>
+
+                        <!-- Not Found -->
+                        <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4">
+                            <h5 class="font-semibold text-red-400 mb-2">🔍 404 Not Found</h5>
+                            <p class="text-xs text-gray-400 mb-2">Terjadi ketika produk dengan ID tertentu tidak ditemukan</p>
+                            <pre class="code-block bg-black p-3 rounded text-xs">{
+    "message": "No query results for model [App\\Models\\Product] 99"
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. RINGKASAN ENDPOINT -->
+                <div class="mb-6">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4">📌 Ringkasan Endpoint Produk</h3>
+                    
                     <table class="api-table w-full text-sm">
                         <thead>
-                            <tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr>
+                            <tr>
+                                <th>Method</th>
+                                <th>Endpoint</th>
+                                <th>Deskripsi</th>
+                                <th>Auth</th>
+                                <th>Role</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td><span class="method-badge method-get">GET</span></td><td>/api/products</td><td>Get all products</td><td>No</td></tr>
-                            <tr><td><span class="method-badge method-post">POST</span></td><td>/api/products</td><td>Create product</td><td>Yes (Bearer Token)</td></tr>
-                            <tr><td><span class="method-badge method-get">GET</span></td><td>/api/products/{id}</td><td>Get single product</td><td>No</td></tr>
-                            <tr><td><span class="method-badge method-put">PUT</span></td><td>/api/products/{id}</td><td>Update product</td><td>Yes (Bearer Token)</td></tr>
-                            <tr><td><span class="method-badge method-delete">DELETE</span></td><td>/api/products/{id}</td><td>Delete product</td><td>Yes (Bearer Token)</td></tr>
+                            <tr>
+                                <td><span class="method-badge method-get">GET</span></td>
+                                <td class="font-mono">/api/products</td>
+                                <td>Mengambil semua produk</td>
+                                <td>❌</td>
+                                <td>Public</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-get">GET</span></td>
+                                <td class="font-mono">/api/products/{id}</td>
+                                <td>Mengambil detail produk</td>
+                                <td>❌</td>
+                                <td>Public</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-post">POST</span></td>
+                                <td class="font-mono">/api/products</td>
+                                <td>Membuat produk baru</td>
+                                <td>✅</td>
+                                <td>Admin</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-put">PUT</span></td>
+                                <td class="font-mono">/api/products/{id}</td>
+                                <td>Mengupdate produk</td>
+                                <td>✅</td>
+                                <td>Admin</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-delete">DELETE</span></td>
+                                <td class="font-mono">/api/products/{id}</td>
+                                <td>Menghapus produk</td>
+                                <td>✅</td>
+                                <td>Admin</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+
+             
             </section>
 
             <!-- TRANSAKSI & PAYMENT GATEWAY -->
+                  <!-- TRANSAKSI & PAYMENT GATEWAY -->
             <section id="transaksi-payment" class="mb-8">
                 <div class="mb-6">
                     <h2 class="text-4xl font-extrabold text-[#dc2626] mb-3">Transaksi & Payment Gateway</h2>
-                    <p class="text-gray-300 text-lg">Implementasi transaksi dengan 2 tabel (Orders & OrderItems) dan integrasi Midtrans.</p>
+                    <p class="text-gray-300 text-lg">Implementasi transaksi dengan integrasi Midtrans Payment Gateway.</p>
                 </div>
 
-                <!-- Database Relationship -->
-                <div class="flex flex-col md:flex-row justify-center gap-6 bg-[#0a0a0a] p-6 rounded-xl border border-[#2a2a2a] mb-6">
-                    <div class="text-center p-4 border border-[#dc2626] rounded-lg">
-                        <div class="font-bold text-[#dc2626]">orders</div>
-                        <div class="text-xs">id(PK), user_id, total_amount, status, payment_status, payment_token</div>
-                    </div>
-                    <div class="text-2xl text-[#dc2626] text-center">⇨ 1:N ⇨</div>
-                    <div class="text-center p-4 border border-[#dc2626] rounded-lg">
-                        <div class="font-bold text-[#dc2626]">order_items</div>
-                        <div class="text-xs">id(PK), order_id(FK), product_id, quantity, price, subtotal</div>
-                    </div>
-                </div>
-
-                <!-- Order Relationship -->
-                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-6">
-                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
-                        <span>app/Models/Order.php (Relationships)</span>
-                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm">Copy</button>
-                    </div>
-                    <pre class="code-block p-5">public function user() { return $this->belongsTo(User::class); }
-public function items() { return $this->hasMany(OrderItem::class); }</pre>
-                </div>
-
-                <!-- Payment Methods -->
-                <h3 class="text-2xl font-bold text-[#dc2626] mb-4">Payment Methods Supported</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
-                        <i class="fab fa-cc-mastercard text-4xl text-[#dc2626]"></i>
-                        <div class="font-semibold mt-2">Midtrans</div>
-                    </div>
-                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
-                        <i class="fas fa-university text-4xl text-[#dc2626]"></i>
-                        <div class="font-semibold mt-2">Virtual Account</div>
-                    </div>
-                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
-                        <i class="fas fa-qrcode text-4xl text-[#dc2626]"></i>
-                        <div class="font-semibold mt-2">QRIS</div>
-                    </div>
-                    <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
-                        <i class="fab fa-google-pay text-4xl text-[#dc2626]"></i>
-                        <div class="font-semibold mt-2">E-Wallet</div>
+                <div class="text-gray-300 space-y-4 mb-6">
+                    <p>Pada section ini, kita akan mengintegrasikan <strong>Midtrans Payment Gateway</strong> ke dalam aplikasi Laravel kita. Midtrans adalah payment gateway terkemuka di Indonesia yang mendukung berbagai metode pembayaran seperti transfer bank, kartu kredit, QRIS, dan e-wallet.</p>
+                    
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-6 mt-4">
+                        <h3 class="text-xl font-bold text-[#dc2626] mb-3">Apa itu Payment Gateway?</h3>
+                        <p class="mb-3">Payment Gateway adalah layanan yang memproses pembayaran online antara pembeli dan penjual. Midtrans bertindak sebagai perantara yang aman untuk memproses transaksi tanpa perlu menyimpan data sensitif kartu kredit di server kita.</p>
+                        
+                        <h4 class="font-semibold text-white mt-4 mb-2">Fitur yang akan kita bangun:</h4>
+                        <ul class="space-y-2 pl-5">
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Membuat transaksi baru (Checkout)</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Mendapatkan Snap Token untuk pembayaran</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Webhook untuk notifikasi status pembayaran</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Melihat riwayat transaksi user</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[#dc2626] text-[8px]"></i> Admin dapat mengelola semua transaksi</li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- Install Midtrans -->
-                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
-                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
-                        <span>Install Midtrans Package</span>
-                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                <!-- 1. DAFTAR AKUN MIDTRANS -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">1</span> Daftar Akun Midtrans
+                    </h3>
+
+                    <p class="text-gray-300 mb-4">Sebelum memulai integrasi, Anda perlu memiliki akun Midtrans terlebih dahulu.</p>
+
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-4">
+                        <h4 class="font-bold text-white mb-3">Langkah-langkah Pendaftaran:</h4>
+                        <ol class="text-sm text-gray-400 space-y-3 pl-5">
+                            <li>1. Kunjungi website Midtrans: <a href="https://midtrans.com" target="_blank" class="text-blue-400 underline">https://midtrans.com</a></li>
+                            <li>2. Klik tombol <strong>"Daftar"</strong> atau <strong>"Sign Up"</strong> di pojok kanan atas</li>
+                            <li>3. Isi formulir pendaftaran dengan email dan data diri Anda</li>
+                            <li>4. Verifikasi email yang dikirimkan oleh Midtrans</li>
+                            <li>5. pastikan akun anda telah diaktivasi oleh admin midtrans(mungkin butuh waktu sekitar 3 hari)</li>
+                            <li>6. Setelah login, Anda akan diarahkan ke <strong>Dashboard Midtrans</strong></li>
+                        </ol>
+                        <img src="ssmidprod.jpg" alt="Dashboard Midtrans" class="my-4 rounded-lg border border-[#2a2a2a]">
                     </div>
-                    <pre class="code-block p-5">composer require midtrans/midtrans-php</pre>
+
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5">
+                        <h4 class="font-bold text-white mb-3">Mendapatkan Server Key & Client Key (Sandbox Mode)</h4>
+                        <ol class="text-sm text-gray-400 space-y-3 pl-5">
+                            <li>1. di sidebar cari menu "Environment" klik lalu pilih sandbox</li>
+                            <li>2. Pilih menu <strong>Settings → Access Keys</strong></li>
+                            <li>3. Copy <strong class="text-yellow-400">Server Key</strong> dan <strong class="text-blue-400">Client Key</strong></li>
+                            <li>4. Simpan kedua key tersebut, akan kita gunakan nanti</li>
+                        </ol>
+                        <img src="ssmid.jpg" alt="Midtrans Access Keys" class="my-4 rounded-lg border border-[#2a2a2a]">
+                        
+                        <div class="bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg p-4 mt-4">
+                            <p class="font-semibold text-yellow-400 flex items-center gap-2"><i class="fas fa-info-circle"></i> Penting!</p>
+                            <p class="text-sm text-gray-300 mt-1">Server Key bersifat <strong>RAHASIA</strong> dan hanya digunakan di backend. Client Key digunakan di frontend. Jangan pernah commit Server Key ke repository publik!</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- .env Config -->
-                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
-                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
-                        <span>.env Konfigurasi Midtrans</span>
-                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                <!-- 2. INSTALL MIDTRANS PACKAGE -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">2</span> Install Midtrans Package
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Install package Midtrans PHP melalui Composer:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">composer require midtrans/midtrans-php</pre>
                     </div>
-                    <pre class="code-block p-5">MIDTRANS_MERCHANT_ID=G123456789
-MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxx
-MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxxx
-MIDTRANS_IS_PRODUCTION=false
-MIDTRANS_IS_SANDBOX=true</pre>
+
+                    <p class="text-gray-300">Package ini akan memudahkan kita dalam berinteraksi dengan Midtrans API.</p>
                 </div>
 
-                <!-- Payment Controller -->
-                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
-                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
-                        <span>PaymentController.php - Create Payment</span>
-                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
+                <!-- 3. KONFIGURASI ENVIRONMENT -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">3</span> Konfigurasi Environment (.env)
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Tambahkan konfigurasi Midtrans di file <strong>.env</strong>:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">.env</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxxxxxxxxxxxxxxxxx
+MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxxxxxxxxxxxxxxxx
+MIDTRANS_IS_PRODUCTION=false</pre>
                     </div>
-                    <pre class="code-block p-5">public function createPayment(Request $request, Order $order)
+
+                    <div class="bg-green-900/20 border-l-4 border-green-500 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i> Penjelasan</p>
+                        <ul class="text-sm text-gray-300 mt-1 space-y-1">
+                            <li>• <code>MIDTRANS_SERVER_KEY</code>: Digunakan untuk request dari backend ke Midtrans</li>
+                            <li>• <code>MIDTRANS_CLIENT_KEY</code>: Digunakan untuk inisialisasi Snap di frontend</li>
+                            <li>• <code>MIDTRANS_IS_PRODUCTION</code>: <code>false</code> untuk mode sandbox/testing, <code>true</code> untuk production</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 4. BUAT CONFIG MIDTRANS -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">4</span> Buat Config Midtrans
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buat file konfigurasi Midtrans di <strong>config/midtrans.php</strong>:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">config/midtrans.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+return [
+    'serverKey' => env('MIDTRANS_SERVER_KEY'),
+    'clientKey' => env('MIDTRANS_CLIENT_KEY'),
+    'isProduction' => env('MIDTRANS_IS_PRODUCTION', false),
+];</pre>
+                    </div>
+
+                    <p class="text-gray-300">File ini akan memudahkan kita mengakses konfigurasi Midtrans menggunakan <code>config('midtrans.serverKey')</code>.</p>
+                </div>
+
+                <!-- 5. BUAT TABEL TRANSACTIONS -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">5</span> Buat Tabel Transactions
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buat migration untuk tabel transactions:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:migration create_transactions_table</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Buka file migration yang baru dibuat dan isi dengan schema berikut:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">database/migrations/xxxx_xx_xx_create_transactions_table.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">Schema::create('transactions', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
+    $table->foreignId('product_id')->constrained()->onDelete('cascade');
+    $table->integer('qty');
+    $table->string('status');
+    $table->string('payment_type')->nullable();
+    $table->string('midtrans_order_id')->nullable();
+    $table->string('snap_token')->nullable();
+    $table->integer('total_price');
+    $table->timestamps();
+});</pre>
+                    </div>
+
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-4">
+                        <h4 class="font-bold text-[#dc2626] mb-3">📋 Penjelasan Kolom Tabel</h4>
+                        <table class="api-table w-full text-sm">
+                            <thead>
+                                <tr><th>Kolom</th><th>Tipe</th><th>Keterangan</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="font-mono">user_id</td><td>foreignId</td><td>Relasi ke tabel users (siapa yang beli)</td></tr>
+                                <tr><td class="font-mono">product_id</td><td>foreignId</td><td>Relasi ke tabel products (produk yang dibeli)</td></tr>
+                                <tr><td class="font-mono">qty</td><td>integer</td><td>Jumlah produk yang dibeli</td></tr>
+                                <tr><td class="font-mono">status</td><td>string</td><td>Status transaksi: pending, success, failed</td></tr>
+                                <tr><td class="font-mono">payment_type</td><td>string</td><td>Metode pembayaran yang dipilih user</td></tr>
+                                <tr><td class="font-mono">midtrans_order_id</td><td>string</td><td>Order ID unik untuk Midtrans</td></tr>
+                                <tr><td class="font-mono">snap_token</td><td>string</td><td>Token untuk membuka halaman pembayaran</td></tr>
+                                <tr><td class="font-mono">total_price</td><td>integer</td><td>Total harga (price × qty)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Jalankan migration:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan migrate</pre>
+                    </div>
+                </div>
+
+                <!-- 6. SETUP MODEL TRANSACTION -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">6</span> Setup Model Transaction
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buat model Transaction beserta relasinya:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:model Transaction</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>app/Models/Transaction.php</strong> dan isi dengan kode berikut:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Models/Transaction.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Transaction extends Model
 {
-    Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-    Config::$isProduction = false;
-    Config::$isSanitized = true;
-    Config::$is3ds = true;
+    use HasFactory;
 
-    $params = [
-        'transaction_details' => [
-            'order_id' => 'ORDER-' . $order->id . '-' . time(),
-            'gross_amount' => $order->total_amount,
-        ],
-        'customer_details' => [
-            'first_name' => auth()->user()->name,
-            'email' => auth()->user()->email,
-        ],
-        'item_details' => $this->getItemDetails($order),
-    ];
+    protected $guarded = [];
 
-    $snapToken = Snap::getSnapToken($params);
-    $order->update(['payment_token' => $snapToken, 'payment_status' => 'pending']);
+    /**
+     * Relasi ke User (pembeli)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-    return response()->json(['snap_token' => $snapToken]);
+    /**
+     * Relasi ke Product (produk yang dibeli)
+     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }</pre>
-                </div>
-
-                <!-- Payment Routes -->
-                <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
-                    <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between">
-                        <span>routes/api.php (Payment Routes)</span>
-                        <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded text-sm">Copy</button>
                     </div>
-                    <pre class="code-block p-5">Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/orders/{order}/payment', [PaymentController::class, 'createPayment']);
-    Route::get('/orders/{order}/payment-status', [PaymentController::class, 'checkStatus']);
-});
 
-// Webhook (public)
-Route::post('/payment/notification', [PaymentController::class, 'handleNotification']);</pre>
+                    <p class="text-gray-300"><code>$guarded = []</code> artinya semua field boleh diisi secara massal. Untuk keamanan lebih, Anda bisa menggunakan <code>$fillable</code> sebagai alternatif.</p>
                 </div>
 
-                <!-- Testing Sandbox -->
+                <!-- 7. BUAT USER MIDDLEWARE -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">7</span> Buat User Middleware
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Kita perlu middleware untuk memastikan hanya user dengan role <strong>member</strong> yang bisa melakukan transaksi:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:middleware UserMiddleware</pre>
+                    </div>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Http/Middleware/UserMiddleware.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+class UserMiddleware
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $user = Auth::user();
+        
+        if ($user->role !== 'member') {
+            return response()->json([
+                'message' => 'User only'
+            ], 403);
+        }
+
+        return $next($request);
+    }
+}</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Daftarkan middleware di <strong>bootstrap/app.php</strong> (tambahkan bersama AdminMiddleware):</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">bootstrap/app.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'user' => \App\Http\Middleware\UserMiddleware::class,
+    ]);
+})</pre>
+                    </div>
+                </div>
+
+                <!-- 8. BUAT TRANSACTION CONTROLLER -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">8</span> Buat Transaction Controller
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buat controller untuk menangani semua operasi transaksi:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm"><i class="fas fa-terminal text-[#dc2626] mr-2"></i> Terminal Command</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">php artisan make:controller TransactionController --resource</pre>
+                    </div>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>app/Http/Controllers/TransactionController.php</strong> dan isi dengan kode berikut:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">app/Http/Controllers/TransactionController.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
+
+class TransactionController extends Controller
+{
+    /**
+     * Get Semua Transaksi (ADMIN ONLY)
+     */
+    public function index()
+    {
+        $transactions = Transaction::with(['user', 'product'])->get();
+        return response()->json($transactions);
+    }
+
+    /**
+     * Get Transaksi by User (USER ONLY)
+     * Mengambil riwayat transaksi user yang sedang login
+     */
+    public function getByUser(Request $request)
+    {
+        $transactions = Transaction::with('product')
+            ->where('user_id', $request->user()->id)
+            ->get();
+            
+        return response()->json($transactions);
+    }
+
+    /**
+     * Create Transaksi Baru (USER ONLY)
+     * Membuat transaksi dan mendapatkan Snap Token dari Midtrans
+     */
+    public function create(Request $request)
+    {
+        // Konfigurasi Midtrans
+        \Midtrans\Config::$serverKey = config('midtrans.serverKey');
+        \Midtrans\Config::$isProduction = config('midtrans.isProduction');
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        // Validasi input
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'qty' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+
+        // Validasi stock
+        if ($request->qty > $product->stock) {
+            return response()->json([
+                'message' => 'Stock tidak mencukupi'
+            ], 400);
+        }
+
+        // Generate Order ID unik
+        $orderId = 'ORDER-' . uniqid();
+
+        // Simpan transaksi ke database
+        $transaction = Transaction::create([
+            'user_id' => $request->user()->id,
+            'product_id' => $product->id,
+            'qty' => $request->qty,
+            'status' => 'pending',
+            'midtrans_order_id' => $orderId,
+            'total_price' => $product->price * $request->qty,
+        ]);
+
+        // Siapkan parameter untuk Midtrans
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $transaction->total_price,
+            ],
+            'item_details' => [
+                [
+                    'id' => $product->id,
+                    'price' => $product->price,
+                    'quantity' => $request->qty,
+                    'name' => $product->name,
+                ]
+            ],
+            'customer_details' => [
+                'first_name' => $request->user()->fullname,
+                'email' => $request->user()->email,
+                'phone' => $request->user()->no_telp,
+            ]
+        ];
+
+        // Dapatkan Snap Token dari Midtrans
+        $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+        // Update transaksi dengan Snap Token
+        $transaction->update([
+            'snap_token' => $snapToken
+        ]);
+
+        return response()->json([
+            'message' => 'Transaction created successfully',
+            'snap_token' => $snapToken,
+            'transaction' => $transaction
+        ], 201);
+    }
+
+    /**
+     * Callback / Webhook Midtrans (PUBLIC)
+     * Endpoint yang dipanggil Midtrans saat status pembayaran berubah
+     */
+    public function callback(Request $request)
+    {
+        $orderId = $request->order_id;
+        $status = $request->transaction_status;
+        $paymentType = $request->payment_type;
+
+        $transaction = Transaction::where('midtrans_order_id', $orderId)->first();
+
+        if (!$transaction) {
+            return response()->json(['message' => 'Transaction not found'], 404);
+        }
+
+        // Cegah double update
+        if ($transaction->status === 'success') {
+            return response()->json(['message' => 'Already processed']);
+        }
+
+        // Update status berdasarkan response Midtrans
+        if ($status === 'settlement' || $status === 'capture') {
+            $transaction->status = 'success';
+            $transaction->payment_type = $paymentType;
+            $transaction->save();
+
+            // Kurangi stock produk
+            $product = Product::find($transaction->product_id);
+            if ($product && $product->stock >= $transaction->qty) {
+                $product->stock -= $transaction->qty;
+                $product->save();
+            }
+        } elseif ($status === 'pending') {
+            $transaction->status = 'pending';
+            $transaction->save();
+        } elseif (in_array($status, ['deny', 'expire', 'cancel'])) {
+            $transaction->status = 'failed';
+            $transaction->save();
+        }
+
+        return response()->json(['message' => 'OK']);
+    }
+
+    /**
+     * Update Status Transaksi (ADMIN ONLY)
+     * Manual update status oleh admin
+     */
+    public function update(Request $request, Transaction $transaction)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,success,failed',
+        ]);
+
+        $transaction->update([
+            'status' => $request->status,
+        ]);
+
+        return response()->json([
+            'message' => 'Transaction updated successfully',
+            'transaction' => $transaction
+        ]);
+    }
+
+    // Method kosong (tidak digunakan)
+    public function store(Request $request) {}
+    public function show(Transaction $transaction) {}
+    public function edit(Transaction $transaction) {}
+    public function destroy(Transaction $transaction) {}
+}</pre>
+                    </div>
+
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-4">
+                        <h4 class="font-bold text-[#dc2626] mb-3">📋 Penjelasan Method Controller</h4>
+                        <table class="api-table w-full text-sm">
+                            <thead>
+                                <tr><th>Method</th><th>Fungsi</th><th>Akses</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="font-mono">index()</td><td>Mengambil semua transaksi</td><td><span class="method-badge method-get">ADMIN</span></td></tr>
+                                <tr><td class="font-mono">getByUser()</td><td>Mengambil transaksi user login</td><td><span class="method-badge method-get">USER</span></td></tr>
+                                <tr><td class="font-mono">create()</td><td>Membuat transaksi baru</td><td><span class="method-badge method-post">USER</span></td></tr>
+                                <tr><td class="font-mono">callback()</td><td>Menerima notifikasi Midtrans</td><td><span class="method-badge method-post">PUBLIC</span></td></tr>
+                                <tr><td class="font-mono">update()</td><td>Update status transaksi</td><td><span class="method-badge method-put">ADMIN</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 9. REGISTER ROUTES -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">9</span> Register API Routes
+                    </h3>
+
+                    <p class="text-gray-300 mb-3">Buka file <strong>routes/api.php</strong> dan tambahkan routing untuk transaksi:</p>
+
+                    <div class="bg-[#0a0a0a] rounded-lg border border-[#2a2a2a] overflow-hidden mb-4">
+                        <div class="bg-[#1f1f1f] px-5 py-3 flex justify-between items-center">
+                            <span class="font-mono text-sm">routes/api.php</span>
+                            <button onclick="copyCode(this)" class="bg-[#dc2626] hover:bg-[#b91c1c] px-3 py-1 rounded-lg text-sm flex items-center gap-2 transition"><i class="far fa-copy"></i> Copy</button>
+                        </div>
+                        <pre class="code-block p-5">&lt;?php
+
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\UserMiddleware;
+
+// ==========================================
+// PUBLIC ROUTES
+// ==========================================
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+
+// Public Auth Routes
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+// Midtrans Webhook (PUBLIC - dipanggil oleh Midtrans)
+Route::post('/payment/callback', [TransactionController::class, 'callback']);
+
+// ==========================================
+// PROTECTED ROUTES (Perlu Login)
+// ==========================================
+Route::middleware('auth:sanctum')->group(function () {
+    
+    // User Routes (umum)
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // ==========================================
+    // ADMIN ONLY ROUTES
+    // ==========================================
+    Route::middleware([AdminMiddleware::class])->group(function () {
+        // Product Management
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::put('/products/{product}', [ProductController::class, 'update']);
+        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+        
+        // Transaction Management (Admin)
+        Route::get('/transactions', [TransactionController::class, 'index']);
+        Route::put('/transactions/{transaction}', [TransactionController::class, 'update']);
+    });
+    
+    // ==========================================
+    // USER ONLY ROUTES (Member)
+    // ==========================================
+    Route::middleware([UserMiddleware::class])->group(function () {
+        // Transaction (User)
+        Route::post('/transactions', [TransactionController::class, 'create']);
+        Route::get('/transactions/user', [TransactionController::class, 'getByUser']);
+    });
+});</pre>
+                    </div>
+
+                    <div class="bg-green-900/20 border-l-4 border-green-500 rounded-lg p-4 mb-4">
+                        <p class="font-semibold text-green-400 flex items-center gap-2"><i class="fas fa-check-circle"></i> Struktur Routing Transaksi</p>
+                        <ul class="text-sm text-gray-300 mt-2 space-y-1 pl-5">
+                            <li>• <code>POST /api/payment/callback</code> → Webhook Midtrans (PUBLIC)</li>
+                            <li>• <code>GET /api/transactions</code> → Admin melihat semua transaksi</li>
+                            <li>• <code>PUT /api/transactions/{id}</code> → Admin update status transaksi</li>
+                            <li>• <code>POST /api/transactions</code> → User membuat transaksi baru</li>
+                            <li>• <code>GET /api/transactions/user</code> → User melihat riwayat transaksinya</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 10. TESTING API -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4 flex items-center">
+                        <span class="step-number">10</span> Testing API di Postman
+                    </h3>
+
+                    <!-- Create Transaction -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-post">POST</span> 
+                            <span class="font-mono">/api/transactions</span>
+                            <span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded ml-2">USER ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Membuat transaksi baru dan mendapatkan Snap Token</p>
+                        
+                        <h5 class="font-semibold text-gray-300 mb-2">Langkah-langkah:</h5>
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Login sebagai user dengan role <strong>member</strong></li>
+                            <li>2. Copy token yang didapatkan</li>
+                            <li>3. Buat request baru dengan method <strong>POST</strong></li>
+                            <li>4. Masukkan URL: <strong>localhost:8000/api/transactions</strong></li>
+                            <li>5. Tab <strong>Authorization</strong> → Bearer Token → paste token</li>
+                            <li>6. Tab <strong>Body</strong> → form-data → tambahkan:
+                                <br>- product_id (ID produk yang ingin dibeli)
+                                <br>- qty (jumlah pembelian)
+                            </li>
+                            <li>7. Klik <strong>Send</strong></li>
+                        </ol>
+                        
+                        <img src="body-create-transaction.jpg" alt="Body Request Create Transaction" class="my-4 rounded-lg border border-[#2a2a2a]">
+                        
+                        <p class="text-gray-400 text-sm">Response sukses (akan mendapatkan snap_token):</p>
+                        <pre class="code-block bg-black p-3 rounded text-xs mt-2">{
+    "message": "Transaction created successfully",
+    "snap_token": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "transaction": {
+        "id": 1,
+        "user_id": 2,
+        "product_id": 1,
+        "qty": 2,
+        "status": "pending",
+        "midtrans_order_id": "ORDER-67890abcdef",
+        "total_price": 24000000
+    }
+}</pre>
+                    </div>
+
+                    <!-- Get User Transactions -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-get">GET</span> 
+                            <span class="font-mono">/api/transactions/user</span>
+                            <span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded ml-2">USER ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Melihat riwayat transaksi user yang sedang login</p>
+                        
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Gunakan token user member</li>
+                            <li>2. Method <strong>GET</strong></li>
+                            <li>3. URL: <strong>localhost:8000/api/transactions/user</strong></li>
+                            <li>4. Klik <strong>Send</strong></li>
+                        </ol>
+                    </div>
+
+                    <!-- Get All Transactions (Admin) -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-get">GET</span> 
+                            <span class="font-mono">/api/transactions</span>
+                            <span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded ml-2">ADMIN ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Admin melihat semua transaksi</p>
+                        
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Login sebagai user admin</li>
+                            <li>2. Gunakan token admin</li>
+                            <li>3. Method <strong>GET</strong></li>
+                            <li>4. URL: <strong>localhost:8000/api/transactions</strong></li>
+                            <li>5. Klik <strong>Send</strong></li>
+                        </ol>
+                    </div>
+
+                    <!-- Update Transaction Status (Admin) -->
+                    <div class="bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-5 mb-6">
+                        <h4 class="font-bold text-white text-lg mb-3 flex items-center gap-2">
+                            <span class="method-badge method-put">PUT</span> 
+                            <span class="font-mono">/api/transactions/{id}</span>
+                            <span class="text-xs bg-red-900 text-red-300 px-2 py-1 rounded ml-2">ADMIN ONLY</span>
+                        </h4>
+                        <p class="text-gray-400 text-sm mb-3">Admin mengupdate status transaksi secara manual</p>
+                        
+                        <ol class="text-sm text-gray-400 space-y-2 pl-5">
+                            <li>1. Gunakan token admin</li>
+                            <li>2. Method <strong>PUT</strong></li>
+                            <li>3. URL: <strong>localhost:8000/api/transactions/1</strong></li>
+                            <li>4. Body → form-data → tambahkan:
+                                <br>- status (pending/success/failed)
+                            </li>
+                            <li>5. Klik <strong>Send</strong></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Payment Methods Supported -->
+                <div class="mb-10">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4">Metode Pembayaran yang Didukung</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                            <i class="fas fa-credit-card text-4xl text-[#dc2626]"></i>
+                            <div class="font-semibold mt-2">Kartu Kredit</div>
+                            <div class="text-xs text-gray-500">Visa, Mastercard, JCB</div>
+                        </div>
+                        <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                            <i class="fas fa-university text-4xl text-[#dc2626]"></i>
+                            <div class="font-semibold mt-2">Virtual Account</div>
+                            <div class="text-xs text-gray-500">BCA, BNI, BRI, Mandiri</div>
+                        </div>
+                        <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                            <i class="fas fa-qrcode text-4xl text-[#dc2626]"></i>
+                            <div class="font-semibold mt-2">QRIS</div>
+                            <div class="text-xs text-gray-500">Scan & Pay</div>
+                        </div>
+                        <div class="payment-card bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 text-center">
+                            <i class="fas fa-wallet text-4xl text-[#dc2626]"></i>
+                            <div class="font-semibold mt-2">E-Wallet</div>
+                            <div class="text-xs text-gray-500">GoPay, OVO, DANA, ShopeePay</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testing Sandbox Card -->
                 <div class="bg-green-900/20 border-l-4 border-green-500 rounded-lg p-4 mb-4">
-                    <p class="font-semibold text-green-400">🧪 Testing Sandbox Midtrans</p>
-                    <p class="text-sm mt-1">Kartu uji: <strong>VISA 4811 1111 1111 1114</strong> | CVV: 123 | Exp: 01/25 | 3DS Password: 112233</p>
+                    <p class="font-semibold text-green-400 text-lg flex items-center gap-2">
+                        <i class="fas fa-flask"></i> 🧪 Testing Sandbox Midtrans
+                    </p>
+                    <p class="text-sm text-gray-300 mt-2">Gunakan data kartu uji berikut untuk testing pembayaran di mode Sandbox:</p>
+                    <div class="bg-black rounded-lg p-3 mt-2">
+                        <p class="font-mono text-sm"><span class="text-gray-500">Kartu:</span> <strong class="text-white">VISA 4811 1111 1111 1114</strong></p>
+                        <p class="font-mono text-sm"><span class="text-gray-500">CVV:</span> <strong class="text-white">123</strong></p>
+                        <p class="font-mono text-sm"><span class="text-gray-500">Expiry:</span> <strong class="text-white">01/25</strong></p>
+                        <p class="font-mono text-sm"><span class="text-gray-500">3DS Password:</span> <strong class="text-white">112233</strong></p>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Untuk metode pembayaran lain (Virtual Account, QRIS, dll), cukup ikuti instruksi yang muncul di halaman pembayaran Midtrans.</p>
                 </div>
 
                 <!-- Payment Flow Diagram -->
                 <div class="bg-[#0a0a0a] rounded-xl border border-[#2a2a2a] p-6 mt-6">
-                    <h3 class="font-bold text-[#dc2626] text-lg mb-4 text-center">Payment Flow Diagram</h3>
+                    <h3 class="font-bold text-[#dc2626] text-lg mb-4 text-center">🔄 Alur Pembayaran Midtrans</h3>
                     <div class="flex flex-col md:flex-row justify-center items-center gap-3 text-sm">
-                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">1. Create Order</div>
-                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
-                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">2. Request Payment</div>
-                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
-                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">3. Get Snap Token</div>
-                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
-                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">4. User Pays</div>
-                        <i class="fas fa-arrow-right text-[#dc2626]"></i>
-                        <div class="bg-[#1f1f1f] p-3 rounded-lg text-center">5. Webhook Update</div>
+                        <div class="bg-[#1f1f1f] p-4 rounded-lg text-center min-w-[120px]">
+                            <i class="fas fa-shopping-cart text-2xl text-[#dc2626] mb-2"></i>
+                            <div>1. User Checkout</div>
+                            <div class="text-xs text-gray-400">POST /transactions</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-[#dc2626] text-xl"></i>
+                        <div class="bg-[#1f1f1f] p-4 rounded-lg text-center min-w-[120px]">
+                            <i class="fas fa-key text-2xl text-[#dc2626] mb-2"></i>
+                            <div>2. Dapatkan Snap Token</div>
+                            <div class="text-xs text-gray-400">Response Midtrans</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-[#dc2626] text-xl"></i>
+                        <div class="bg-[#1f1f1f] p-4 rounded-lg text-center min-w-[120px]">
+                            <i class="fas fa-credit-card text-2xl text-[#dc2626] mb-2"></i>
+                            <div>3. User Membayar</div>
+                            <div class="text-xs text-gray-400">Halaman Midtrans</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-[#dc2626] text-xl"></i>
+                        <div class="bg-[#1f1f1f] p-4 rounded-lg text-center min-w-[120px]">
+                            <i class="fas fa-bell text-2xl text-[#dc2626] mb-2"></i>
+                            <div>4. Webhook Callback</div>
+                            <div class="text-xs text-gray-400">Update Status</div>
+                        </div>
+                        <i class="fas fa-arrow-right text-[#dc2626] text-xl"></i>
+                        <div class="bg-[#1f1f1f] p-4 rounded-lg text-center min-w-[120px]">
+                            <i class="fas fa-check-circle text-2xl text-green-500 mb-2"></i>
+                            <div>5. Transaksi Sukses</div>
+                            <div class="text-xs text-gray-400">Stock Berkurang</div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Ringkasan Endpoint -->
+                <div class="mb-6 mt-8">
+                    <h3 class="text-2xl font-bold text-[#dc2626] mb-4">📌 Ringkasan Endpoint Transaksi</h3>
+                    
+                    <table class="api-table w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Endpoint</th>
+                                <th>Deskripsi</th>
+                                <th>Auth</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="method-badge method-post">POST</span></td>
+                                <td class="font-mono">/api/transactions</td>
+                                <td>Membuat transaksi baru</td>
+                                <td>✅</td>
+                                <td>Member</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-get">GET</span></td>
+                                <td class="font-mono">/api/transactions/user</td>
+                                <td>Melihat riwayat transaksi user</td>
+                                <td>✅</td>
+                                <td>Member</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-get">GET</span></td>
+                                <td class="font-mono">/api/transactions</td>
+                                <td>Melihat semua transaksi</td>
+                                <td>✅</td>
+                                <td>Admin</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-put">PUT</span></td>
+                                <td class="font-mono">/api/transactions/{id}</td>
+                                <td>Update status transaksi</td>
+                                <td>✅</td>
+                                <td>Admin</td>
+                            </tr>
+                            <tr>
+                                <td><span class="method-badge method-post">POST</span></td>
+                                <td class="font-mono">/api/payment/callback</td>
+                                <td>Webhook Midtrans</td>
+                                <td>❌</td>
+                                <td>Public</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Catatan Penting -->
                 <div class="bg-[#1a1a2e] border-l-4 border-yellow-500 rounded-lg p-4 mt-6">
-                    <div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle text-yellow-400"></i><span class="font-bold text-yellow-400">Penting!</span></div>
-                    <p class="text-sm text-gray-300">Jangan pernah menyimpan data kartu kredit di database. Gunakan environment sandbox untuk development. Server Key harus disimpan di .env.</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        <span class="font-bold text-yellow-400 text-lg">Penting!</span>
+                    </div>
+                    <ul class="text-sm text-gray-300 space-y-2 pl-5">
+                        <li>• Jangan pernah menyimpan data kartu kredit di database Anda</li>
+                        <li>• Gunakan environment <strong>Sandbox</strong> untuk development dan testing</li>
+                        <li>• <strong>Server Key</strong> harus disimpan di .env dan TIDAK BOLEH di-commit ke repository</li>
+                        <li>• Webhook callback hanya berfungsi jika aplikasi Anda dapat diakses dari internet (gunakan ngrok untuk testing lokal)</li>
+                        <li>• Untuk production, ganti <code>MIDTRANS_IS_PRODUCTION=true</code> dan gunakan Server Key production</li>
+                    </ul>
+                </div>
+
+                <!-- SELESAI -->
+                <div class="bg-gradient-to-r from-[#991b1b] to-[#dc2626] rounded-xl p-6 text-center mt-8">
+                    <i class="fas fa-check-circle text-white text-4xl mb-3"></i>
+                    <h3 class="text-white text-xl font-bold mb-2">🎉 Transaksi & Payment Gateway Selesai!</h3>
+                    <p class="text-gray-200 text-sm">Anda telah berhasil mengintegrasikan Midtrans Payment Gateway ke dalam aplikasi Laravel.</p>
+                    <p class="text-gray-200 text-sm mt-2">Sekarang user dapat melakukan pembayaran dengan berbagai metode yang didukung Midtrans!</p>
                 </div>
             </section>
         </main>
