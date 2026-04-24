@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Master MangsIpul Desktop - Complete Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        code, pre {
+            font-family: 'Fira Code', monospace;
+        }
+        
+        /* Custom scrollbar untuk sidebar */
+        .sidebar-purple::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .sidebar-purple::-webkit-scrollbar-track {
+            background: #5b21b6;
+        }
+        
+        .sidebar-purple::-webkit-scrollbar-thumb {
+            background: #c4b5fd;
+            border-radius: 10px;
+        }
+        
+        /* Animasi highlight untuk kode */
+        pre {
+            transition: all 0.3s ease;
+        }
+        
+        pre:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Tabel responsif */
+        .responsive-table {
+            overflow-x: auto;
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 flex">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-80 sidebar-purple bg-gradient-to-b from-purple-800 to-purple-900 h-screen sticky top-0 p-6 hidden lg:block shadow-2xl flex-shrink-0 overflow-y-auto">
+        <div class="mb-8 text-center">
+            <div class="bg-white/10 rounded-2xl p-4 mb-4">
+                <h1 class="text-3xl font-black text-white uppercase italic tracking-wider">MangsIpul</h1>
+                <p class="text-xs text-purple-200 mt-2 uppercase tracking-widest font-bold">Modul Dekstop 2026</p>
+            </div>
+            <div class="h-1 w-16 bg-purple-300 mx-auto rounded-full"></div>
+        </div>
+        
+        <nav class="space-y-2 text-sm">
+            <div class="text-purple-300 text-xs font-bold uppercase tracking-wider mb-2 px-3">🔥 Getting Started</div>
+            <a href="#persiapan" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">1. Persiapan & Instalasi Tools</a>
+            <a href="#arsitektur" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">2. Arsitektur Proyek</a>
+            <a href="#inisialisasi" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">3. Inisialisasi Proyek</a>
+            
+            <div class="text-purple-300 text-xs font-bold uppercase tracking-wider mt-4 mb-2 px-3">🔐 Modul Autentikasi</div>
+            <a href="#desain-login" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">4. Desain Form Login (Step-by-Step)</a>
+            <a href="#logika-login" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">5. Implementasi API Login + Session</a>
+            
+            <div class="text-purple-300 text-xs font-bold uppercase tracking-wider mt-4 mb-2 px-3">📦 Modul Transaksi</div>
+            <a href="#form-transaksi" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">6. Desain & Binding DataGridView</a>
+            <a href="#crud-transaksi" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">7. CRUD Transaksi dengan API</a>
+            
+            <div class="text-purple-300 text-xs font-bold uppercase tracking-wider mt-4 mb-2 px-3">📦 Modul Produk</div>
+            <a href="#form-produk" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">8. Manajemen Produk</a>
+            
+            <div class="text-purple-300 text-xs font-bold uppercase tracking-wider mt-4 mb-2 px-3">🧭 Arsitektur Navigasi</div>
+            <a href="#logic-navigasi" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">9. MDI Parent & Child Form Handler</a>
+            
+            <div class="text-purple-300 text-xs font-bold uppercase tracking-wider mt-4 mb-2 px-3">⚡ Best Practices</div>
+            <a href="#error-handling" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">10. Global Error Handling</a>
+            <a href="#deployment" class="block px-3 py-2 rounded-lg hover:bg-purple-700 transition text-purple-100 hover:text-white">11. Deployment & Packaging</a>
+        </nav>
+        
+        <div class="mt-8 pt-6 border-t border-purple-700 text-center">
+            <p class="text-purple-300 text-xs">🎯 Total 11 Modul Lengkap</p>
+            <p class="text-purple-400 text-[10px] mt-1">Dilengkapi Contoh Kode Siap Pakai</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 md:p-12 max-w-6xl mx-auto">
+        
+        <!-- Header Hero -->
+        <header class="mb-12 text-center lg:text-left">
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 card-hover">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
+                            <span class="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></span>
+                                    Modul Pembelajaran Lengkap
+                        </div>
+                        <h2 class="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
+                            Bangun Aplikasi <span class="text-purple-600">MangsIpul</span>
+                        </h2>
+                        <p class="text-lg text-slate-600 leading-relaxed">
+                            Panduan komprehensif pengembangan aplikasi Desktop Windows Forms 
+                            dengan arsitektur REST API. Materi mencakup dari <strong class="text-purple-700">persiapan lingkungan</strong>, 
+                            <strong class="text-purple-700">desain UI/UX</strong>, hingga <strong class="text-purple-700">implementasi CRUD</strong> dan <strong class="text-purple-700">deployment</strong>.
+                        </p>
+                        <div class="flex flex-wrap gap-3 mt-6 justify-center lg:justify-start">
+                            <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-mono">.NET 6+</div>
+                            <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-mono">WinForms</div>
+                            <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-mono">REST API</div>
+                            <div class="bg-slate-100 px-4 py-2 rounded-lg text-sm font-mono">Newtonsoft.JSON</div>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <div class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-6 text-white text-center">
+                            <div class="text-4xl font-black">2026</div>
+                            <div class="text-xs uppercase tracking-wider mt-1">Enterprise Edition</div>
+                            <div class="mt-3 text-2xl font-mono">v3.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Section 1: Persiapan & Instalasi Tools -->
+        <section id="persiapan" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">01</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Persiapan & Instalasi Tools</h3>
+                    <p class="text-slate-500 mt-1">Membangun fondasi lingkungan pengembangan yang solid</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-8">
+                        <!-- Kenapa Visual Studio 2022 -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3 flex items-center gap-2">
+                                <span class="text-2xl">🎯</span> Mengapa Visual Studio 2022 Community?
+                            </h4>
+                            <div class="bg-purple-50 rounded-xl p-5 text-slate-700 leading-relaxed">
+                                <p class="mb-3">Visual Studio 2022 Community adalah <strong class="text-purple-800">IDE gratis dan full-featured</strong> yang menjadi standar industri untuk pengembangan .NET. Berikut keunggulannya:</p>
+                                <ul class="list-disc list-inside space-y-2 ml-2">
+                                    <li><strong class="text-purple-700">Debugger Profesional</strong> - Fitur breakpoint, watch, dan immediate window untuk melacak bug dengan presisi tinggi</li>
+                                    <li><strong class="text-purple-700">WinForms Designer</strong> - Editor visual drag-and-drop untuk mempercepat desain UI tanpa perlu coding manual posisi kontrol</li>
+                                    <li><strong class="text-purple-700">IntelliCode</strong> - AI-assisted coding yang memprediksi kode berdasarkan konteks, meningkatkan produktivitas hingga 30%</li>
+                                    <li><strong class="text-purple-700">NuGet Package Manager</strong> - Manajemen library eksternal terintegrasi, memudahkan instalasi Newtonsoft.Json, RestSharp, dll</li>
+                                    <li><strong class="text-purple-700">Live Share</strong> - Kolaborasi real-time dengan tim untuk pair programming</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Langkah Download Detail -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3 flex items-center gap-2">
+                                <span class="text-2xl">📥</span> Prosedur Download & Instalasi Lengkap
+                            </h4>
+                            <div class="space-y-4">
+                                <div class="flex gap-3 items-start">
+                                    <div class="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-slate-800">Kunjungi situs resmi Microsoft</p>
+                                        <p class="text-slate-600 text-sm">Buka <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" class="text-purple-600 font-mono hover:underline">visualstudio.microsoft.com/downloads</a> menggunakan browser (Chrome/Edge/Firefox).</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start">
+                                    <div class="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-slate-800">Pilih edisi Community</p>
+                                        <p class="text-slate-600 text-sm">Scroll ke bawah, temukan bagian <strong>"Visual Studio Community 2022"</strong>, lalu klik tombol <span class="bg-green-500 text-white px-2 py-0.5 rounded text-xs">Free Download</span>. Edisi Community gratis untuk individu, open source, dan tim kecil (maks 5 developer).</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start">
+                                    <div class="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-slate-800">Jalankan Installer</p>
+                                        <p class="text-slate-600 text-sm">File <code class="bg-slate-100 px-1 rounded">vs_community.exe</code> akan terdownload. Klik kanan → <strong>Run as Administrator</strong> (penting untuk instalasi komponen sistem).</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start">
+                                    <div class="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-slate-800">Pilih Workload yang Tepat</p>
+                                        <p class="text-slate-600 text-sm">Centang <strong class="text-purple-700">".NET desktop development"</strong>. Workload ini akan menginstal:</p>
+                                        <ul class="list-disc list-inside ml-4 text-sm text-slate-600 mt-1">
+                                            <li>.NET Framework 4.8 SDK & .NET 6/7/8 SDK</li>
+                                            <li>Windows Forms Designer</li>
+                                            <li>MSBuild compiler</li>
+                                            <li>Debugging tools</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 items-start">
+                                    <div class="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">5</div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-slate-800">Klik Install & Tunggu Proses</p>
+                                        <p class="text-slate-600 text-sm">Proses instalasi memakan waktu 10-30 menit tergantung kecepatan internet. Pastikan koneksi stabil karena total download sekitar 5-8 GB.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Verifikasi Instalasi -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3 flex items-center gap-2">
+                                <span class="text-2xl">✅</span> Verifikasi Instalasi
+                            </h4>
+                            <div class="bg-slate-50 rounded-xl p-5 font-mono text-sm">
+                                <p class="text-green-600">✔ Visual Studio 2022 muncul di Start Menu</p>
+                                <p class="text-green-600 mt-1">✔ Bisa membuat project baru dengan template "Windows Forms App"</p>
+                                <p class="text-green-600 mt-1">✔ NuGet Package Manager bisa diakses via Tools → NuGet Package Manager</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Arsitektur Proyek -->
+        <section id="arsitektur" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">02</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Arsitektur Proyek</h3>
+                    <p class="text-slate-500 mt-1">Membangun struktur kode yang scalable dan maintainable</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <p class="text-slate-700 leading-relaxed mb-6">
+                        Arsitektur aplikasi desktop modern memisahkan <strong class="text-purple-700">UI (Presentation Layer)</strong>, 
+                        <strong class="text-purple-700">Logika Bisnis (Business Logic)</strong>, dan <strong class="text-purple-700">Akses Data (Data Access)</strong>.
+                        Berikut struktur folder yang direkomendasikan untuk proyek MangsIpul:
+                    </p>
+                    
+                    <!-- Struktur Folder Visual -->
+                    <div class="bg-slate-900 rounded-xl p-6 mb-6 overflow-x-auto">
+                        <pre class="text-green-400 text-sm font-mono leading-7">
+MangsIpulApp/
+├── 📁 Forms/                      # Semua Form UI
+│   ├── LoginForm.cs
+│   ├── MainDashboard.cs
+│   ├── TransaksiForm.cs
+│   └── ProdukForm.cs
+│
+├── 📁 Models/                     # Class untuk merepresentasikan data
+│   ├── User.cs
+│   ├── Barang.cs
+│   ├── Transaksi.cs
+│   └── ApiResponse.cs
+│
+├── 📁 Services/                   # Service layer (API, Session, dll)
+│   ├── ApiService.cs              # HttpClient terpusat
+│   ├── SessionManager.cs          # Manajemen token & user session
+│   └── AuthService.cs             # Login/logout logic
+│
+├── 📁 Helpers/                    # Utility classes
+│   ├── FormHelper.cs              # Navigasi form
+│   └── ValidationHelper.cs        # Validasi input
+│
+├── 📁 Resources/                  # Assets (gambar, icon)
+│   └── logo.png
+│
+├── app.config                     # Konfigurasi aplikasi (base URL, dll)
+└── Program.cs                     # Entry point aplikasi
+                        </pre>
+                    </div>
+                    
+                    <!-- Penjelasan Tiap Layer -->
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div class="border border-purple-100 rounded-xl p-4 bg-purple-50/30">
+                            <div class="font-bold text-purple-800 mb-2">📁 Forms Layer</div>
+                            <p class="text-sm text-slate-600">Berisi semua file .cs untuk UI. Setiap form hanya bertanggung jawab untuk <strong>menampilkan data</strong> dan <strong>mengirim input user</strong>. Tidak boleh ada logika bisnis atau akses database langsung di sini.</p>
+                        </div>
+                        <div class="border border-purple-100 rounded-xl p-4 bg-purple-50/30">
+                            <div class="font-bold text-purple-800 mb-2">📁 Models Layer</div>
+                            <p class="text-sm text-slate-600">Plain C# class yang merepresentasikan struktur data (mirip dengan JSON dari API). Contoh: <code class="bg-slate-100 px-1">User</code> punya property <code>Id, Username, Email</code>.</p>
+                        </div>
+                        <div class="border border-purple-100 rounded-xl p-4 bg-purple-50/30">
+                            <div class="font-bold text-purple-800 mb-2">📁 Services Layer</div>
+                            <p class="text-sm text-slate-600">Tempat semua logika komunikasi dengan API, manajemen session, dan business rules. Form hanya memanggil method dari service ini.</p>
+                        </div>
+                        <div class="border border-purple-100 rounded-xl p-4 bg-purple-50/30">
+                            <div class="font-bold text-purple-800 mb-2">📁 Helpers Layer</div>
+                            <p class="text-sm text-slate-600">Function-function utility yang reusable, seperti format tanggal, validasi email, atau navigasi antar form.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                        <p class="text-sm text-amber-800">
+                            <strong class="font-bold">💡 Prinsip Penting:</strong> Pisahkan UI dari logika! Jika nanti ingin migrasi dari WinForms ke WPF atau MAUI, 
+                            Anda hanya perlu mengganti folder Forms, sementara Models dan Services bisa digunakan ulang 100%.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Inisialisasi Proyek -->
+        <section id="inisialisasi" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">03</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Inisialisasi Proyek</h3>
+                    <p class="text-slate-500 mt-1">Langkah membuat proyek baru di Visual Studio</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-purple-900 mb-3">Langkah-langkah Membuat Proyek Baru:</h4>
+                            <ol class="list-decimal list-inside space-y-3 text-slate-700">
+                                <li>Buka Visual Studio 2022 → Klik <strong>"Create a new project"</strong></li>
+                                <li>Pilih template <strong>"Windows Forms App (.NET Framework)"</strong> atau <strong>"Windows Forms App"</strong> (.NET 6/7/8)</li>
+                                <li>Isi:
+                                    <ul class="list-disc list-inside ml-8 mt-1 text-sm text-slate-600">
+                                        <li><strong>Project name:</strong> MangsIpulApp</li>
+                                        <li><strong>Location:</strong> Pilih folder (misal: D:\Projects\)</li>
+                                        <li><strong>Framework:</strong> .NET 6.0 (LTS) atau .NET 8.0</li>
+                                    </ul>
+                                </li>
+                                <li>Klik <strong>"Create"</strong></li>
+                            </ol>
+                        </div>
+                        
+                        <!-- Install NuGet Packages -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 mb-3">Install NuGet Packages yang Diperlukan:</h4>
+                            <div class="bg-slate-800 rounded-xl p-4">
+                                <pre class="text-green-300 text-sm font-mono">
+# Buka Tools → NuGet Package Manager → Package Manager Console
+# Kemudian jalankan perintah berikut:
+
+Install-Package Newtonsoft.Json -Version 13.0.3
+Install-Package RestSharp -Version 110.2.0
+Install-Package Microsoft.Extensions.Configuration.Json -Version 7.0.0
+                                </pre>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-3">
+                                <strong>Newtonsoft.Json</strong> digunakan untuk serialize/deserialize JSON dari API.<br>
+                                <strong>RestSharp</strong> alternatif HttpClient yang lebih sederhana.<br>
+                                <strong>Microsoft.Extensions.Configuration</strong> untuk membaca file konfigurasi seperti appsettings.json.
+                            </p>
+                        </div>
+                        
+                        <!-- Program.cs Entry Point -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 mb-3">Kode Program.cs (Entry Point):</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('programCode')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="programCode" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+using System;
+using System.Windows.Forms;
+
+namespace MangsIpulApp
+{
+    internal static class Program
+    {
+        /// &lt;summary&gt;
+        /// Entry point utama aplikasi.
+        /// &lt;/summary&gt;
+        [STAThread]
+        static void Main()
+        {
+            // Mengaktifkan visual styles untuk tampilan modern
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            
+            // Menampilkan form login terlebih dahulu
+            // LoginForm akan mengecek apakah user sudah login sebelumnya
+            Application.Run(new LoginForm());
+        }
+    }
+}
+                                </pre>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-2">
+                                <code>[STAThread]</code> adalah attribute yang wajib ada untuk aplikasi Windows Forms. 
+                                STA = Single-Threaded Apartment, diperlukan untuk komponen COM seperti Clipboard dan Drag-Drop.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Desain Form Login Step-by-Step -->
+        <section id="desain-login" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">04</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Desain Form Login (Step-by-Step)</h3>
+                    <p class="text-slate-500 mt-1">Membuat antarmuka login yang profesional dan user-friendly</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-10">
+                        <!-- Tahap 1: Konfigurasi Form -->
+                        <div>
+                            <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg inline-block text-sm font-bold mb-4">TAHAP 1</div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4">Konfigurasi Jendela Form</h4>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <p class="text-slate-700 mb-3">Buka file <code class="bg-slate-100 px-1">LoginForm.cs</code> di designer, lalu set properti berikut di <strong>Properties Window</strong>:</p>
+                                    <ul class="space-y-3">
+                                        <li class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-mono text-sm">Text</span>
+                                            <span class="text-purple-700 font-mono text-sm">"MangsIpul Login System"</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-mono text-sm">Size</span>
+                                            <span class="text-purple-700 font-mono text-sm">450, 600</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-mono text-sm">StartPosition</span>
+                                            <span class="text-purple-700 font-mono text-sm">CenterScreen</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-mono text-sm">FormBorderStyle</span>
+                                            <span class="text-purple-700 font-mono text-sm">FixedDialog</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-mono text-sm">MaximizeBox</span>
+                                            <span class="text-purple-700 font-mono text-sm">False</span>
+                                        </li>
+                                        <li class="flex justify-between items-center border-b pb-2">
+                                            <span class="font-mono text-sm">BackColor</span>
+                                            <span class="text-purple-700 font-mono text-sm">White atau #F3F4F6</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="bg-slate-100 rounded-xl p-4 text-center">
+                                    <div class="text-slate-400 text-sm mb-2">Preview</div>
+                                    <div class="bg-white rounded-lg shadow-md p-4 mx-auto w-64">
+                                        <div class="h-3 w-48 bg-gray-200 rounded mx-auto mb-3"></div>
+                                        <div class="h-2 w-32 bg-gray-200 rounded mx-auto mb-4"></div>
+                                        <div class="h-8 bg-gray-200 rounded mb-3"></div>
+                                        <div class="h-8 bg-gray-200 rounded mb-3"></div>
+                                        <div class="h-8 bg-purple-400 rounded"></div>
+                                        <div class="text-xs text-gray-400 mt-3">[Form akan muncul di tengah layar]</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tahap 2: Komponen Input -->
+                        <div>
+                            <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg inline-block text-sm font-bold mb-4">TAHAP 2</div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4">Menambahkan Komponen Input</h4>
+                            <div class="space-y-4">
+                                <div class="flex gap-4 items-start">
+                                    <span class="bg-purple-200 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</span>
+                                    <div class="flex-1">
+                                        <p><strong class="text-purple-800">Label "Username"</strong> - Drag dari Toolbox → Label, set Text = "Email / Username"</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-start">
+                                    <span class="bg-purple-200 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</span>
+                                    <div class="flex-1">
+                                        <p><strong class="text-purple-800">TextBox Username</strong> - Drag TextBox, set (Name) = <code>txtUsername</code>, set placeholder menggunakan event Enter/Leave</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-start">
+                                    <span class="bg-purple-200 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</span>
+                                    <div class="flex-1">
+                                        <p><strong class="text-purple-800">Label "Password"</strong> - Sama seperti username</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-start">
+                                    <span class="bg-purple-200 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">4</span>
+                                    <div class="flex-1">
+                                        <p><strong class="text-purple-800">TextBox Password</strong> - Drag TextBox, set:</p>
+                                        <ul class="list-disc list-inside ml-4 mt-1 text-sm">
+                                            <li>(Name) = <code>txtPassword</code></li>
+                                            <li><strong class="text-red-600">UseSystemPasswordChar = True</strong> ← <span class="text-red-600 font-bold">WAJIB!</span> (menampilkan bullet ●●● bukan teks asli)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-start">
+                                    <span class="bg-purple-200 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">5</span>
+                                    <div class="flex-1">
+                                        <p><strong class="text-purple-800">CheckBox "Show Password"</strong> - Untuk toggle visibility password</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-start">
+                                    <span class="bg-purple-200 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">6</span>
+                                    <div class="flex-1">
+                                        <p><strong class="text-purple-800">Button Login</strong> - Drag Button, set properti:</p>
+                                        <ul class="list-disc list-inside ml-4 mt-1 text-sm">
+                                            <li>(Name) = <code>btnLogin</code></li>
+                                            <li>Text = "MASUK" atau "LOGIN"</li>
+                                            <li>BackColor = <span class="bg-purple-600 text-white px-2 rounded">#6d28d9</span> (Purple)</li>
+                                            <li>ForeColor = White</li>
+                                            <li>FlatStyle = Flat, lalu set FlatAppearance.BorderSize = 0</li>
+                                            <li>Cursor = Hand (ubah pointer saat hover)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tahap 3: Tata Letak dengan TableLayoutPanel -->
+                        <div>
+                            <div class="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg inline-block text-sm font-bold mb-4">TAHAP 3 (OPTIONAL)</div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4">Menggunakan TableLayoutPanel untuk Responsif</h4>
+                            <p class="text-slate-700 mb-3">
+                                Agar form terlihat rapi dan responsif saat di-resize (walau FixedDialog, tetap bagus untuk maintain layout), gunakan TableLayoutPanel:
+                            </p>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-700 ml-4">
+                                <li>Drag <strong>TableLayoutPanel</strong> ke form, set Dock = Fill</li>
+                                <li>Atur jumlah baris dan kolom (misal 5 baris, 2 kolom)</li>
+                                <li>Masukkan Label dan TextBox ke dalam sel yang sesuai</li>
+                                <li>Atur properti ColumnStyles dan RowStyles untuk persentase lebar</li>
+                            </ol>
+                        </div>
+                        
+                        <!-- Kode untuk Show Password Toggle -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 mb-3">💡 Fitur Tambahan: Toggle Show Password</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('togglePassword')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="togglePassword" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+private void chkShowPassword_CheckedChanged(object sender, EventArgs e)
+{
+    // Jika checkbox dicentang, tampilkan password asli
+    // Jika tidak, tampilkan bullet
+    txtPassword.UseSystemPasswordChar = !chkShowPassword.Checked;
+}
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Implementasi API Login + Session -->
+        <section id="logika-login" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">05</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Implementasi API Login + Session Manager</h3>
+                    <p class="text-slate-500 mt-1">Menghubungkan form login dengan backend REST API</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-8">
+                        <!-- Membuat SessionManager Class -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">1. Membuat SessionManager (Service)</h4>
+                            <p class="text-slate-700 mb-3">Buat file baru <code class="bg-slate-100 px-1">Services/SessionManager.cs</code>:</p>
+                            <div class="relative">
+                                <button onclick="copyCode('sessionManager')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="sessionManager" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+using System;
+
+namespace MangsIpulApp.Services
+{
+    public static class SessionManager
+    {
+        // Menyimpan token JWT yang didapat dari API
+        public static string BearerToken { get; set; }
+        
+        // Informasi user yang sedang login
+        public static string CurrentUserId { get; set; }
+        public static string CurrentUsername { get; set; }
+        public static string CurrentUserEmail { get; set; }
+        public static string CurrentUserRole { get; set; }
+        
+        // Cek apakah user sudah login
+        public static bool IsLoggedIn => !string.IsNullOrEmpty(BearerToken);
+        
+        // Logout: hapus semua session
+        public static void Logout()
+        {
+            BearerToken = null;
+            CurrentUserId = null;
+            CurrentUsername = null;
+            CurrentUserEmail = null;
+            CurrentUserRole = null;
+        }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Membuat ApiService -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">2. Membuat ApiService (HttpClient Handler)</h4>
+                            <p class="text-slate-700 mb-3"><strong>Best Practice:</strong> Gunakan satu instance HttpClient untuk seluruh aplikasi untuk menghindari socket exhaustion.</p>
+                            <div class="relative">
+                                <button onclick="copyCode('apiService')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="apiService" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+
+namespace MangsIpulApp.Services
+{
+    public class ApiService
+    {
+        private static HttpClient _client;
+        private static readonly object _lock = new object();
+        
+        // Singleton pattern untuk HttpClient
+        public static HttpClient Client
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    if (_client == null)
+                    {
+                        _client = new HttpClient();
+                        _client.BaseAddress = new Uri("http://localhost:8000/api/");
+                        _client.DefaultRequestHeaders.Accept.Clear();
+                        _client.DefaultRequestHeaders.Accept.Add(
+                            new MediaTypeWithQualityHeaderValue("application/json"));
+                        _client.Timeout = TimeSpan.FromSeconds(30);
+                    }
+                    return _client;
+                }
+            }
+        }
+        
+        // Method untuk menambahkan token Authorization ke setiap request
+        public static void SetAuthorizationHeader()
+        {
+            if (SessionManager.IsLoggedIn)
+            {
+                Client.DefaultRequestHeaders.Authorization = 
+                    new AuthenticationHeaderValue("Bearer", SessionManager.BearerToken);
+            }
+        }
+        
+        // Hapus authorization header saat logout
+        public static void RemoveAuthorizationHeader()
+        {
+            Client.DefaultRequestHeaders.Authorization = null;
+        }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Model untuk Response Login -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">3. Model untuk Response Login</h4>
+                            <p class="text-slate-700 mb-3">Buat file <code class="bg-slate-100 px-1">Models/LoginResponse.cs</code>:</p>
+                            <div class="relative">
+                                <button onclick="copyCode('loginResponse')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="loginResponse" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+using Newtonsoft.Json;
+
+namespace MangsIpulApp.Models
+{
+    public class LoginRequest
+    {
+        public string email { get; set; }
+        public string password { get; set; }
+    }
+    
+    public class LoginResponse
+    {
+        [JsonProperty("token")]
+        public string Token { get; set; }
+        
+        [JsonProperty("user")]
+        public User User { get; set; }
+        
+        [JsonProperty("message")]
+        public string Message { get; set; }
+    }
+    
+    public class User
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+        
+        [JsonProperty("username")]
+        public string Username { get; set; }
+        
+        [JsonProperty("email")]
+        public string Email { get; set; }
+        
+        [JsonProperty("role")]
+        public string Role { get; set; }
+    }
+    
+    public class ErrorResponse
+    {
+        [JsonProperty("message")]
+        public string Message { get; set; }
+        
+        [JsonProperty("errors")]
+        public object Errors { get; set; }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Implementasi Login di LoginForm -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">4. Implementasi Method Login di LoginForm.cs</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('loginImplementation')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="loginImplementation" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Newtonsoft.Json;
+using MangsIpulApp.Models;
+using MangsIpulApp.Services;
+
+namespace MangsIpulApp.Forms
+{
+    public partial class LoginForm : Form
+    {
+        private readonly HttpClient _httpClient;
+        
+        public LoginForm()
+        {
+            InitializeComponent();
+            _httpClient = ApiService.Client;
+        }
+        
+        private async void btnLogin_Click(object sender, EventArgs e)
+        {
+            // Validasi input tidak boleh kosong
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            {
+                MessageBox.Show("Username/Email tidak boleh kosong!", 
+                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtUsername.Focus();
+                return;
+            }
+            
+            if (string.IsNullOrWhiteSpace(txtPassword.Text))
+            {
+                MessageBox.Show("Password tidak boleh kosong!", 
+                    "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtPassword.Focus();
+                return;
+            }
+            
+            // Disable button sambil proses login
+            btnLogin.Enabled = false;
+            btnLogin.Text = "Memproses...";
+            
+            // Buat request object
+            var loginRequest = new LoginRequest
+            {
+                email = txtUsername.Text.Trim(),
+                password = txtPassword.Text
+            };
+            
+            try
+            {
+                // Serialize ke JSON
+                var json = JsonConvert.SerializeObject(loginRequest);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                
+                // Kirim POST request ke endpoint login
+                var response = await _httpClient.PostAsync("login", content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Parse response JSON
+                    var loginResult = JsonConvert.DeserializeObject&lt;LoginResponse&gt;(responseBody);
+                    
+                    // Simpan token dan data user ke SessionManager
+                    SessionManager.BearerToken = loginResult.Token;
+                    SessionManager.CurrentUserId = loginResult.User.Id.ToString();
+                    SessionManager.CurrentUsername = loginResult.User.Username;
+                    SessionManager.CurrentUserEmail = loginResult.User.Email;
+                    SessionManager.CurrentUserRole = loginResult.User.Role;
+                    
+                    // Set header Authorization untuk request selanjutnya
+                    ApiService.SetAuthorizationHeader();
+                    
+                    // Tampilkan pesan sukses
+                    MessageBox.Show($"Selamat datang, {loginResult.User.Username}!", 
+                        "Login Berhasil", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                    // Buka Main Dashboard
+                    var dashboard = new MainDashboard();
+                    dashboard.Show();
+                    
+                    // Sembunyikan form login, jangan di Close() karena akan mengakhiri aplikasi
+                    this.Hide();
+                }
+                else
+                {
+                    // Handle error dari API (401, 404, 500, dll)
+                    try
+                    {
+                        var errorResult = JsonConvert.DeserializeObject&lt;ErrorResponse&gt;(responseBody);
+                        MessageBox.Show($"Login gagal: {errorResult?.Message ?? "Username atau password salah"}", 
+                            "Error Login", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    catch
+                    {
+                        MessageBox.Show($"Login gagal: Server mengembalikan error ({(int)response.StatusCode})", 
+                            "Error Login", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show($"Tidak dapat terhubung ke server.\nPeriksa koneksi internet Anda.\nDetail: {ex.Message}", 
+                    "Network Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show("Request timeout. Server mungkin sedang sibuk atau koneksi lambat.", 
+                    "Timeout", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Terjadi kesalahan: {ex.Message}", 
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // Enable button kembali
+                btnLogin.Enabled = true;
+                btnLogin.Text = "LOGIN";
+            }
+        }
+        
+        // Event handler untuk tombol Close
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Alur Diagram -->
+                        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-5">
+                            <h4 class="font-bold text-purple-900 mb-2 flex items-center gap-2">
+                                <span>🔄</span> Alur Logika Login
+                            </h4>
+                            <div class="text-sm text-slate-700 space-y-1 font-mono">
+                                <p>1. User klik "Login"</p>
+                                <p class="ml-4">↓ Validasi input (tidak boleh kosong)</p>
+                                <p>2. Buat object LoginRequest {email, password}</p>
+                                <p class="ml-4">↓ Serialize ke JSON</p>
+                                <p>3. Kirim POST request ke /api/login</p>
+                                <p class="ml-4">↓ Tunggu response dari server</p>
+                                <p>4. Jika success (200):</p>
+                                <p class="ml-8">→ Parse JSON response</p>
+                                <p class="ml-8">→ Simpan token ke SessionManager</p>
+                                <p class="ml-8">→ Set Authorization header untuk request selanjutnya</p>
+                                <p class="ml-8">→ Buka MainDashboard</p>
+                                <p class="ml-8">→ Sembunyikan LoginForm</p>
+                                <p>5. Jika gagal:</p>
+                                <p class="ml-8">→ Tampilkan pesan error dari server</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Desain & Binding DataGridView untuk Transaksi -->
+        <section id="form-transaksi" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">06</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Modul Transaksi - Desain & Data Binding</h3>
+                    <p class="text-slate-500 mt-1">Menampilkan data transaksi dengan DataGridView dan mapping ke API</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-8">
+                        <!-- Struktur Data Transaksi -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Struktur Data Transaksi dari API</h4>
+                            <div class="bg-slate-800 rounded-xl p-4 mb-4">
+                                <pre class="text-green-300 text-sm font-mono">
+{
+    "id": 101,
+    "kode_transaksi": "TRX-20260115-001",
+    "tanggal": "2026-01-15T10:30:00",
+    "jumlah": 2,
+    "total_harga": 500000,
+    "status": "completed",
+    "user": {
+        "id": 5,
+        "username": "john_doe",
+        "alamat": "Jl. Merdeka No. 10, Jakarta"
+    },
+    "barang": {
+        "id": 12,
+        "nama": "Laptop Gaming",
+        "harga": 250000
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Setting DataGridView Columns -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Setting Kolom DataGridView (Manual Binding)</h4>
+                            <p class="text-slate-700 mb-3">
+                                Karena struktur JSON memiliki nested object (user.username, barang.nama), kita perlu mapping manual.
+                            </p>
+                            
+                            <div class="responsive-table">
+                                <table class="min-w-full border border-slate-200 text-sm">
+                                    <thead class="bg-slate-100">
+                                        <tr>
+                                            <th class="border p-2 text-left">Display Header</th>
+                                            <th class="border p-2 text-left">DataPropertyName</th>
+                                            <th class="border p-2 text-left">Tipe Data</th>
+                                            <th class="border p-2 text-left">Penjelasan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="border p-2">Kode Transaksi</td><td class="border p-2 font-mono text-purple-700">kode_transaksi</td><td class="border p-2">string</td><td class="border p-2">ID unik transaksi</td></tr>
+                                        <tr><td class="border p-2">Tanggal</td><td class="border p-2 font-mono text-purple-700">tanggal</td><td class="border p-2">DateTime</td><td class="border p-2">Waktu transaksi</td></tr>
+                                        <tr><td class="border p-2">Pembeli</td><td class="border p-2 font-mono text-purple-700">user.username</td><td class="border p-2">string</td><td class="border p-2">Nama pembeli (nested)</td></tr>
+                                        <tr><td class="border p-2">Alamat</td><td class="border p-2 font-mono text-purple-700">user.alamat</td><td class="border p-2">string</td><td class="border p-2">Alamat pengiriman (nested)</td></tr>
+                                        <tr><td class="border p-2">Nama Barang</td><td class="border p-2 font-mono text-purple-700">barang.nama</td><td class="border p-2">string</td><td class="border p-2">Nama produk (nested)</td></tr>
+                                        <tr><td class="border p-2">Jumlah</td><td class="border p-2 font-mono text-purple-700">jumlah</td><td class="border p-2">int</td><td class="border p-2">Quantity barang</td></tr>
+                                        <tr><td class="border p-2">Total Harga</td><td class="border p-2 font-mono text-purple-700">total_harga</td><td class="border p-2">decimal</td><td class="border p-2">Format: Rp 0,000</td></tr>
+                                        <tr><td class="border p-2">Status</td><td class="border p-2 font-mono text-purple-700">status</td><td class="border p-2">string</td><td class="border p-2">pending, completed, cancelled</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded">
+                                <p class="text-sm text-yellow-800">
+                                    <strong>⚠️ Catatan:</strong> DataGridView tidak bisa langsung binding ke nested property (user.username). 
+                                    Kita harus menggunakan <strong>Custom Binding</strong> atau <strong>LINQ projection</strong> untuk flatten data.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Kode untuk Load Data Transaksi -->
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Kode untuk Load Data Transaksi dengan Custom Binding</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('loadTransaksi')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="loadTransaksi" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+using Newtonsoft.Json;
+using MangsIpulApp.Services;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace MangsIpulApp.Forms
+{
+    public partial class TransaksiForm : Form
+    {
+        private readonly HttpClient _httpClient;
+        
+        public TransaksiForm()
+        {
+            InitializeComponent();
+            _httpClient = ApiService.Client;
+            Load += async (s, e) => await LoadTransaksiData();
+        }
+        
+        private async Task LoadTransaksiData()
+        {
+            try
+            {
+                // Tampilkan loading indicator
+                dgvTransaksi.DataSource = null;
+                lblStatus.Text = "Loading data...";
+                
+                // Panggil API GET /transaksi
+                var response = await _httpClient.GetAsync("transaksi");
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    // Deserialize ke list of dynamic atau model
+                    var transaksiList = JsonConvert.DeserializeObject&lt;List&lt;dynamic&gt;&gt;(jsonResponse);
+                    
+                    // Flatten data untuk ditampilkan di DataGridView
+                    var flatList = new List&lt;TransaksiViewModel&gt;();
+                    foreach (var item in transaksiList)
+                    {
+                        flatList.Add(new TransaksiViewModel
+                        {
+                            KodeTransaksi = item.kode_transaksi,
+                            Tanggal = DateTime.Parse(item.tanggal.ToString()),
+                            Pembeli = item.user.username,
+                            Alamat = item.user.alamat,
+                            NamaBarang = item.barang.nama,
+                            Jumlah = item.jumlah,
+                            TotalHarga = item.total_harga,
+                            Status = item.status
+                        });
+                    }
+                    
+                    // Binding ke DataGridView
+                    dgvTransaksi.DataSource = flatList;
+                    
+                    // Format kolom
+                    FormatDataGridView();
+                    
+                    lblStatus.Text = $"Menampilkan {flatList.Count} transaksi";
+                }
+                else
+                {
+                    lblStatus.Text = $"Error: {response.StatusCode}";
+                    MessageBox.Show($"Gagal load data: {jsonResponse}", "Error", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                lblStatus.Text = "Error loading data";
+                MessageBox.Show($"Error: {ex.Message}", "Exception", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        private void FormatDataGridView()
+        {
+            // Set alignment untuk kolom angka
+            if (dgvTransaksi.Columns["TotalHarga"] != null)
+                dgvTransaksi.Columns["TotalHarga"].DefaultCellStyle.Format = "Rp #,0";
+            
+            if (dgvTransaksi.Columns["Tanggal"] != null)
+                dgvTransaksi.Columns["Tanggal"].DefaultCellStyle.Format = "dd MMM yyyy HH:mm";
+            
+            // Warna background berdasarkan status
+            dgvTransaksi.CellFormatting += (s, e) => {
+                if (dgvTransaksi.Columns[e.ColumnIndex].Name == "Status" && e.Value != null)
+                {
+                    string status = e.Value.ToString().ToLower();
+                    if (status == "completed")
+                        e.CellStyle.BackColor = System.Drawing.Color.LightGreen;
+                    else if (status == "pending")
+                        e.CellStyle.BackColor = System.Drawing.Color.LightYellow;
+                    else if (status == "cancelled")
+                        e.CellStyle.BackColor = System.Drawing.Color.LightPink;
+                }
+            };
+        }
+    }
+    
+    // ViewModel untuk flatten data
+    public class TransaksiViewModel
+    {
+        public string KodeTransaksi { get; set; }
+        public DateTime Tanggal { get; set; }
+        public string Pembeli { get; set; }
+        public string Alamat { get; set; }
+        public string NamaBarang { get; set; }
+        public int Jumlah { get; set; }
+        public decimal TotalHarga { get; set; }
+        public string Status { get; set; }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: CRUD Transaksi dengan API -->
+        <section id="crud-transaksi" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">07</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">CRUD Transaksi dengan API</h3>
+                    <p class="text-slate-500 mt-1">Create, Read, Update, Delete data transaksi melalui REST API</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Method Create (POST) -->
+                        <div class="border border-purple-200 rounded-xl p-4">
+                            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold inline-block mb-3">CREATE (POST)</div>
+                            <pre class="bg-slate-800 text-green-300 p-3 rounded text-xs overflow-x-auto">
+// Menambah transaksi baru
+private async Task CreateTransaksi()
+{
+    var newTransaksi = new {
+        barang_id = selectedBarangId,
+        user_id = SessionManager.CurrentUserId,
+        jumlah = nudJumlah.Value,
+        alamat_pengiriman = txtAlamat.Text
+    };
+    
+    var json = JsonConvert.SerializeObject(newTransaksi);
+    var content = new StringContent(json, Encoding.UTF8, "application/json");
+    
+    var response = await _httpClient.PostAsync("transaksi", content);
+    if(response.IsSuccessStatusCode)
+        await LoadTransaksiData();
+}
+                            </pre>
+                        </div>
+                        
+                        <!-- Method Update (PUT) -->
+                        <div class="border border-purple-200 rounded-xl p-4">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold inline-block mb-3">UPDATE (PUT)</div>
+                            <pre class="bg-slate-800 text-blue-300 p-3 rounded text-xs overflow-x-auto">
+// Update status transaksi
+private async Task UpdateStatus(int id, string status)
+{
+    var updateData = new { status = status };
+    var json = JsonConvert.SerializeObject(updateData);
+    var content = new StringContent(json, Encoding.UTF8, "application/json");
+    
+    var response = await _httpClient.PutAsync($"transaksi/{id}", content);
+    if(response.IsSuccessStatusCode)
+        await LoadTransaksiData();
+}
+                            </pre>
+                        </div>
+                        
+                        <!-- Method Delete (DELETE) -->
+                        <div class="border border-purple-200 rounded-xl p-4">
+                            <div class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-bold inline-block mb-3">DELETE</div>
+                            <pre class="bg-slate-800 text-red-300 p-3 rounded text-xs overflow-x-auto">
+// Hapus transaksi
+private async Task DeleteTransaksi(int id)
+{
+    var confirm = MessageBox.Show("Yakin hapus transaksi ini?", 
+        "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+    
+    if(confirm == DialogResult.Yes)
+    {
+        var response = await _httpClient.DeleteAsync($"transaksi/{id}");
+        if(response.IsSuccessStatusCode)
+            await LoadTransaksiData();
+    }
+}
+                            </pre>
+                        </div>
+                        
+                        <!-- Method Read (GET Detail) -->
+                        <div class="border border-purple-200 rounded-xl p-4">
+                            <div class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-bold inline-block mb-3">READ (GET BY ID)</div>
+                            <pre class="bg-slate-800 text-purple-300 p-3 rounded text-xs overflow-x-auto">
+// Ambil detail transaksi
+private async Task GetDetailTransaksi(int id)
+{
+    var response = await _httpClient.GetAsync($"transaksi/{id}");
+    var json = await response.Content.ReadAsStringAsync();
+    var transaksi = JsonConvert.DeserializeObject&lt;dynamic&gt;(json);
+    
+    txtKodeTransaksi.Text = transaksi.kode_transaksi;
+    txtTotal.Text = transaksi.total_harga.ToString();
+}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 8: Modul Produk -->
+        <section id="form-produk" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">08</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Modul Produk - Manajemen Barang</h3>
+                    <p class="text-slate-500 mt-1">CRUD data produk dengan validasi stok dan harga</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Model Produk</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('produkModel')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="produkModel" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+namespace MangsIpulApp.Models
+{
+    public class Produk
+    {
+        public int id { get; set; }
+        public string nama { get; set; }
+        public string kode_produk { get; set; }
+        public decimal harga { get; set; }
+        public int stok { get; set; }
+        public string kategori { get; set; }
+        public string deskripsi { get; set; }
+        public DateTime created_at { get; set; }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Form Produk - Load Data</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('loadProduk')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="loadProduk" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+public partial class ProdukForm : Form
+{
+    private async Task LoadProdukData()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("produk");
+            var json = await response.Content.ReadAsStringAsync();
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var produkList = JsonConvert.DeserializeObject&lt;List&lt;Produk&gt;&gt;(json);
+                dgvProduk.DataSource = produkList;
+                
+                // Format kolom harga
+                dgvProduk.Columns["harga"].DefaultCellStyle.Format = "Rp #,0";
+                
+                // Color warning jika stok &lt; 10
+                dgvProduk.CellFormatting += (s, e) => {
+                    if (dgvProduk.Columns[e.ColumnIndex].Name == "stok" && e.Value != null)
+                    {
+                        int stok = Convert.ToInt32(e.Value);
+                        if (stok < 10)
+                            e.CellStyle.ForeColor = System.Drawing.Color.Red;
+                    }
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error load produk: {ex.Message}");
+        }
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Validasi Form -->
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-xl">
+                            <p class="text-sm text-emerald-800">
+                                <strong class="font-bold">✅ Validasi yang perlu ditambahkan pada form produk:</strong><br>
+                                - Nama produk tidak boleh kosong<br>
+                                - Harga harus > 0<br>
+                                - Stok minimal 0 (tidak negatif)<br>
+                                - Kode produk harus unik (cek ke API terlebih dahulu)<br>
+                                - Konfirmasi sebelum delete
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 9: Arsitektur Navigasi (MDI Parent) -->
+        <section id="logic-navigasi" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">09</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Arsitektur Navigasi - MDI Parent & Child Form</h3>
+                    <p class="text-slate-500 mt-1">Mengelola multiple form dalam satu window dengan proper navigation</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Konsep MDI (Multiple Document Interface)</h4>
+                            <p class="text-slate-700 mb-4">
+                                MDI Parent adalah form utama yang menjadi container untuk form-form child. 
+                                Cocok untuk aplikasi desktop dengan banyak modul seperti dashboard, transaksi, laporan, dll.
+                            </p>
+                            
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="border rounded-lg p-4">
+                                    <div class="font-bold text-purple-800 mb-2">Setting MainDashboard sebagai MDI Parent</div>
+                                    <pre class="bg-slate-800 text-slate-300 p-3 rounded text-xs">
+// Di Properties Form MainDashboard
+this.IsMdiContainer = true;
+// atau di constructor
+public MainDashboard()
+{
+    InitializeComponent();
+    this.IsMdiContainer = true;
+}
+                                    </pre>
+                                </div>
+                                
+                                <div class="border rounded-lg p-4">
+                                    <div class="font-bold text-purple-800 mb-2">OpenChildForm Method (Best Practice)</div>
+                                    <pre class="bg-slate-800 text-slate-300 p-3 rounded text-xs">
+private Form activeForm = null;
+public void OpenChildForm(Form childForm)
+{
+    if (activeForm != null)
+        activeForm.Close();
+    
+    activeForm = childForm;
+    childForm.TopLevel = false;
+    childForm.FormBorderStyle = FormBorderStyle.None;
+    childForm.Dock = DockStyle.Fill;
+    this.Controls.Add(childForm);
+    this.Tag = childForm;
+    childForm.BringToFront();
+    childForm.Show();
+}
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Implementasi Navigasi dengan MenuStrip</h4>
+                            <div class="relative">
+                                <button onclick="copyCode('navigasiMenu')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                                <pre id="navigasiMenu" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+public partial class MainDashboard : Form
+{
+    public MainDashboard()
+    {
+        InitializeComponent();
+        this.IsMdiContainer = true;
+        this.WindowState = FormWindowState.Maximized;
+    }
+    
+    // Event handler untuk menu Transaksi
+    private void transaksiToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        OpenChildForm(new TransaksiForm());
+        SetTitle("Modul Transaksi");
+    }
+    
+    // Event handler untuk menu Produk
+    private void produkToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        OpenChildForm(new ProdukForm());
+        SetTitle("Modul Manajemen Produk");
+    }
+    
+    // Event handler untuk menu Logout
+    private void logoutToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        var confirm = MessageBox.Show("Yakin ingin logout?", "Konfirmasi", 
+            MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        
+        if (confirm == DialogResult.Yes)
+        {
+            SessionManager.Logout();
+            ApiService.RemoveAuthorizationHeader();
+            
+            // Kembali ke LoginForm
+            var loginForm = new LoginForm();
+            loginForm.Show();
+            this.Close();
+        }
+    }
+    
+    private void SetTitle(string title)
+    {
+        lblModuleTitle.Text = title;
+    }
+}
+                                </pre>
+                            </div>
+                        </div>
+                        
+                        <!-- Tips Navigasi -->
+                        <div class="bg-purple-50 rounded-xl p-5">
+                            <h5 class="font-bold text-purple-800 mb-2">💡 Tips Navigasi yang Baik:</h5>
+                            <ul class="list-disc list-inside space-y-1 text-sm text-slate-700">
+                                <li>Gunakan <strong>Panel sebagai container</strong> untuk child form, bukan langsung di MainDashboard</li>
+                                <li>Simpan <strong>history navigasi</strong> untuk fitur back/forward</li>
+                                <li>Tambahkan <strong>loading indicator</strong> saat membuka form yang berat</li>
+                                <li>Gunakan <strong>BackgroundWorker</strong> atau <strong>async/await</strong> untuk operasi yang memakan waktu</li>
+                                <li>Jangan lupa <strong>dispose form</strong> yang sudah ditutup untuk menghindari memory leak</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 10: Global Error Handling -->
+        <section id="error-handling" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">10</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Global Error Handling & Logging</h3>
+                    <p class="text-slate-500 mt-1">Menangani exception secara profesional di level aplikasi</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="relative">
+                        <button onclick="copyCode('globalError')" class="absolute top-2 right-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">Salin</button>
+                        <pre id="globalError" class="bg-slate-900 text-slate-300 p-5 rounded-xl overflow-x-auto text-sm font-mono leading-6">
+// Di Program.cs - Tambahkan global exception handlers
+static class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        // Handle unhandled exceptions dari UI thread
+        Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+        
+        // Handle unhandled exceptions dari non-UI threads
+        AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+        
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+        Application.Run(new LoginForm());
+    }
+    
+    private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+    {
+        LogException(e.Exception);
+        MessageBox.Show($"Terjadi kesalahan: {e.Exception.Message}\n\nSilakan hubungi support.", 
+            "Kesalahan Aplikasi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+    
+    private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var ex = (Exception)e.ExceptionObject;
+        LogException(ex);
+        
+        MessageBox.Show($"Kesalahan fatal: {ex.Message}\nAplikasi akan ditutup.", 
+            "Kesalahan Kritis", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+    
+    private static void LogException(Exception ex)
+    {
+        string logPath = Path.Combine(Application.StartupPath, "logs", $"error_{DateTime.Now:yyyyMMdd}.log");
+        Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+        
+        string logContent = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] " +
+            $"Message: {ex.Message}\n" +
+            $"Stack Trace: {ex.StackTrace}\n" +
+            $"Source: {ex.Source}\n" +
+            new string('-', 50) + "\n";
+        
+        File.AppendAllText(logPath, logContent);
+    }
+}
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 11: Deployment & Packaging -->
+        <section id="deployment" class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="bg-gradient-to-br from-purple-600 to-purple-700 text-white p-4 rounded-xl text-2xl font-bold shadow-lg">11</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900">Deployment & Packaging</h3>
+                    <p class="text-slate-500 mt-1">Mempublikasikan aplikasi ke installer dan distribusi</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <div class="border-l-8 border-purple-600 p-8">
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-purple-900 text-lg mb-3">Cara Membuat Installer dengan ClickOnce</h4>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-700 ml-4">
+                                <li>Klik kanan project → <strong>Publish</strong></li>
+                                <li>Pilih <strong>Folder</strong> → Browse lokasi publish</li>
+                                <li>Pilih <strong>Install from folder</strong></li>
+                                <li>Set <strong>Installation Mode</strong> = "The application is available online only" atau "Offline"</li>
+                                <li>Klik <strong>Finish</strong> → <strong>Publish</strong></li>
+                                <li>Hasil installer akan berada di folder publish, file <strong>.exe</strong> dan <strong>.application</strong></li>
+                            </ol>
+                        </div>
+                        
+                        <div class="bg-slate-50 rounded-xl p-4">
+                            <h4 class="font-bold text-slate-800 mb-2">🎯 Checklist Sebelum Deployment:</h4>
+                            <ul class="grid grid-cols-2 gap-2 text-sm">
+                                <li class="flex items-center gap-2">✓ Application manifest sudah di-sign</li>
+                                <li class="flex items-center gap-2">✓ Base URL API diubah ke production</li>
+                                <li class="flex items-center gap-2">✓ Connection string tidak hardcode</li>
+                                <li class="flex items-center gap-2">✓ Build dalam mode Release</li>
+                                <li class="flex items-center gap-2">✓ Semua dependency sudah terpackage</li>
+                                <li class="flex items-center gap-2">✓ Testing di environment bersih</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="mt-16 pt-8 border-t border-slate-200">
+            <div class="text-center">
+                <p class="text-slate-500 text-sm">MangsIpul Desktop Application Framework</p>
+                <p class="text-slate-400 text-xs mt-1">Modul Pembelajaran Lengkap - Siap Pakai untuk Produksi</p>
+                <div class="flex justify-center gap-4 mt-4 text-xs text-purple-600">
+                    <span>📧 support@mangsipul.com</span>
+                    <span>📚 Version 3.0.0</span>
+                    <span>© 2026 MangsIpul Dev Ecosystem</span>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        function copyCode(id) {
+            const element = document.getElementById(id);
+            const code = element.innerText;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                // Visual feedback
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "Tersalin! ✓";
+                btn.classList.add("bg-green-600");
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove("bg-green-600");
+                }, 2000);
+            }).catch(err => {
+                alert("Gagal menyalin: " + err);
+            });
+        }
+        
+        // Smooth scroll untuk anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
